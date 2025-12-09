@@ -47,6 +47,7 @@ const data = {
       title: "ค้นหา",
       url: "/dashboard/search",
       icon: Search,
+      isActive: true,
       items: [
         {
           title: "ทั้งหมด",

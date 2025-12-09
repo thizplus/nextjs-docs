@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useFavorites } from "@/features/favorites";
+import { useFolders } from "@/features/folders";
 import { useSearchHistory } from "@/features/search";
 import { Clock, Heart, LogOut, Search, FolderHeart } from "lucide-react";
 import Link from "next/link";
@@ -16,9 +17,11 @@ export default function ProfilePage() {
   const user = useUser();
   const logout = useLogout();
   const { data: favoritesData, isLoading: favoritesLoading } = useFavorites();
+  const { data: foldersData, isLoading: foldersLoading } = useFolders();
   const { data: historyData, isLoading: historyLoading } = useSearchHistory();
 
   const favorites = favoritesData?.favorites || [];
+  const folders = foldersData?.folders || [];
   const searchHistory = historyData?.histories || [];
 
   if (!user) {
@@ -168,13 +171,77 @@ export default function ProfilePage() {
               </p>
             )}
             {favorites.length > 5 && (
-              <Button variant="link" className="w-full mt-4">
-                ดูทั้งหมด
-              </Button>
+              <Link href="/dashboard/my-folder">
+                <Button variant="link" className="w-full mt-4">
+                  ดูทั้งหมด
+                </Button>
+              </Link>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Folders Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderHeart className="h-5 w-5" />
+            โฟลเดอร์ของฉัน
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {foldersLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : folders.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {folders.slice(0, 6).map((folder) => (
+                <Link
+                  key={folder.id}
+                  href={`/dashboard/my-folder/${folder.id}`}
+                  className="block"
+                >
+                  <div className="border rounded-lg p-4 hover:border-primary transition-colors">
+                    <div className="flex items-start gap-3">
+                      {folder.coverImageUrl ? (
+                        <img
+                          src={folder.coverImageUrl}
+                          alt={folder.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                          <FolderHeart className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium line-clamp-1">{folder.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {folder.itemCount} รายการ
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              ยังไม่มีโฟลเดอร์
+            </p>
+          )}
+          {folders.length > 6 && (
+            <Link href="/dashboard/my-folder">
+              <Button variant="link" className="w-full mt-4">
+                ดูทั้งหมด ({folders.length} โฟลเดอร์)
+              </Button>
+            </Link>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -215,8 +282,10 @@ export default function ProfilePage() {
                 <FolderHeart className="h-6 w-6 text-green-500" />
               </div>
               <div>
-                <p className="text-3xl font-bold">0</p>
-                <p className="text-sm text-muted-foreground">Folders</p>
+                <p className="text-3xl font-bold">
+                  {foldersLoading ? "-" : folders.length}
+                </p>
+                <p className="text-sm text-muted-foreground">โฟลเดอร์</p>
               </div>
             </div>
           </CardContent>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -31,17 +31,19 @@ import {
   Send,
   Sparkles,
   Loader2,
+  Plus,
+  SkipForward,
   History,
   MessageSquare,
   Trash2,
   X,
-  SkipForward,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/shared/components/common";
 import { useTypewriter } from "@/shared/hooks";
 import { aiService } from "@/services";
 import {
   useChatSessions,
+  useChatSession,
   useDeleteChat,
   useClearAllChats,
 } from "@/features/ai";
@@ -108,6 +110,7 @@ function ConversationList({
   const { data: sessionsData, isLoading } = useChatSessions();
   const deleteChat = useDeleteChat();
   const clearAllChats = useClearAllChats();
+  const router = useRouter();
 
   const sessions = sessionsData?.sessions || [];
 
@@ -115,6 +118,10 @@ function ConversationList({
     e.stopPropagation();
     try {
       await deleteChat.mutateAsync(sessionId);
+      // If deleting current session, redirect to main AI page
+      if (sessionId === currentSessionId) {
+        router.push("/dashboard/ai");
+      }
     } catch (error) {
       console.error("Failed to delete session:", error);
     }
@@ -123,6 +130,7 @@ function ConversationList({
   const handleClearAll = async () => {
     try {
       await clearAllChats.mutateAsync();
+      router.push("/dashboard/ai");
     } catch (error) {
       console.error("Failed to clear sessions:", error);
     }
@@ -237,10 +245,10 @@ function ConversationList({
   );
 }
 
-function AIChatContent() {
-  const searchParams = useSearchParams();
+export default function AISessionPage() {
+  const params = useParams();
   const router = useRouter();
-  const initialQuery = searchParams.get("q") || "";
+  const sessionId = params.sessionId as string;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -248,30 +256,41 @@ function AIChatContent() {
   const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasAutoSearched = useRef(false);
 
-  // Scroll to bottom only when new message is added (not during typing)
+  // Load session detail
+  const { data: sessionDetail, isLoading: isLoadingSession } = useChatSession(
+    sessionId,
+    !!sessionId
+  );
+
+  // Load messages from session detail
+  useEffect(() => {
+    if (sessionDetail && sessionDetail.messages) {
+      const loadedMessages: ChatMessage[] = sessionDetail.messages.map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        timestamp: m.createdAt,
+        isNew: false,
+      }));
+      setMessages(loadedMessages);
+    }
+  }, [sessionDetail]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Auto-search when coming from search page with query
   useEffect(() => {
-    if (initialQuery && !hasAutoSearched.current && messages.length === 0) {
-      hasAutoSearched.current = true;
-      setInput(initialQuery);
-      setTimeout(() => {
-        handleSendWithQuery(initialQuery);
-      }, 100);
-    }
-  }, [initialQuery]);
+    scrollToBottom();
+  }, [messages]);
 
   const handleSelectSession = (selectedSessionId: string) => {
     router.push(`/dashboard/ai/${selectedSessionId}`);
   };
 
   const handleSendWithQuery = async (queryText: string) => {
-    if (!queryText.trim()) return;
+    if (!queryText.trim() || !sessionId) return;
 
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -284,54 +303,37 @@ function AIChatContent() {
     setInput("");
     setIsLoading(true);
 
-    // Scroll when user sends message
-    setTimeout(scrollToBottom, 100);
-
     try {
-      // Create new session
-      const response = await aiService.createChat({ query: queryText });
-      if (response.success && response.data) {
-        const newSessionId = response.data.id;
-        const assistantMsg = response.data.messages?.find(
-          (m: { role: string }) => m.role === "assistant"
-        );
-        const aiContent = assistantMsg?.content || "ไม่พบข้อมูลสำหรับคำถามนี้";
+      const response = await aiService.sendMessage(sessionId, {
+        message: queryText,
+      });
 
+      if (response.success && response.data) {
         const messageId = `msg-${Date.now() + 1}`;
         const aiMessage: ChatMessage = {
           id: messageId,
           role: "assistant",
-          content: aiContent,
+          content: response.data.content,
           timestamp: new Date().toISOString(),
           isNew: true,
         };
         setTypingMessageId(messageId);
         setMessages((prev) => [...prev, aiMessage]);
-
-        // Scroll when AI response arrives
-        setTimeout(scrollToBottom, 100);
-
-        // Redirect to session URL after response is shown
-        setTimeout(() => {
-          router.push(`/dashboard/ai/${newSessionId}`);
-        }, 500);
       } else {
         throw new Error(response.message || "API Error");
       }
-    } catch {
-      // Fallback to local AI response if API fails
-      const aiResponse = generateLocalResponse(queryText);
+    } catch (error) {
+      console.error("Failed to send message:", error);
       const messageId = `msg-${Date.now() + 1}`;
       const aiMessage: ChatMessage = {
         id: messageId,
         role: "assistant",
-        content: aiResponse,
+        content: "ขออภัย เกิดข้อผิดพลาดในการตอบกลับ กรุณาลองใหม่อีกครั้ง",
         timestamp: new Date().toISOString(),
         isNew: true,
       };
       setTypingMessageId(messageId);
       setMessages((prev) => [...prev, aiMessage]);
-      setTimeout(scrollToBottom, 100);
     } finally {
       setIsLoading(false);
     }
@@ -341,36 +343,38 @@ function AIChatContent() {
     await handleSendWithQuery(input);
   };
 
-  // Local response generator (fallback when API is not available)
-  const generateLocalResponse = (userInput: string): string => {
-    const lowerInput = userInput.toLowerCase();
-
-    if (lowerInput.includes("กรุงเทพ") || lowerInput.includes("bangkok")) {
-      return `จากคำถามของคุณเกี่ยวกับกรุงเทพฯ ผมขอแนะนำสถานที่ท่องเที่ยวยอดนิยม:
-
-1. **วัดพระแก้ว** - วัดที่สำคัญที่สุดในประเทศไทย ตั้งอยู่ในพระบรมมหาราชวัง
-2. **วัดอรุณราชวราราม** - วัดแห่งรุ่งอรุณ ริมแม่น้ำเจ้าพระยา
-3. **ตลาดจตุจักร** - ตลาดนัดสุดสัปดาห์ที่ใหญ่ที่สุดในโลก
-
-คุณสนใจสถานที่ไหนเป็นพิเศษไหมครับ?`;
-    } else {
-      return `ขอบคุณสำหรับคำถามครับ! เกี่ยวกับ "${userInput}"
-
-ผมเป็น AI Assistant ที่พร้อมช่วยเหลือคุณเกี่ยวกับ:
-- แนะนำสถานที่ท่องเที่ยวทั่วประเทศไทย
-- แนะนำร้านอาหารและที่พัก
-- วางแผนเส้นทางการท่องเที่ยว
-
-คุณต้องการทราบข้อมูลเพิ่มเติมเกี่ยวกับอะไรครับ?`;
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
+
+  const handleNewChat = () => {
+    router.push("/dashboard/ai");
+  };
+
+  // Show loading state
+  if (isLoadingSession) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-3 pb-4">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div>
+            <Skeleton className="h-6 w-32 mb-1" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <Separator />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">กำลังโหลดบทสนทนา...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -381,9 +385,11 @@ function AIChatContent() {
             <Sparkles className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">AI Assistant</h1>
+            <h1 className="text-2xl font-bold">
+              {sessionDetail?.title || "AI Assistant"}
+            </h1>
             <p className="text-sm text-muted-foreground">
-              ถามอะไรก็ได้เกี่ยวกับการท่องเที่ยว
+              {sessionDetail?.initialQuery || "ถามอะไรก็ได้เกี่ยวกับการท่องเที่ยว"}
             </p>
           </div>
         </div>
@@ -405,11 +411,21 @@ function AIChatContent() {
               </SheetHeader>
               <ConversationList
                 onSelectSession={handleSelectSession}
-                currentSessionId={null}
+                currentSessionId={sessionId}
                 onClose={() => setSheetOpen(false)}
               />
             </SheetContent>
           </Sheet>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNewChat}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            สนทนาใหม่
+          </Button>
         </div>
       </div>
 
@@ -418,104 +434,69 @@ function AIChatContent() {
       {/* Chat Area */}
       <ScrollArea className="flex-1 pr-4 py-4">
         <div className="space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full py-16 text-center">
-              <div className="bg-primary/10 p-4 rounded-full mb-4">
-                <Sparkles className="h-12 w-12 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                สวัสดี! ฉันคือ AI Assistant
-              </h3>
-              <p className="text-muted-foreground max-w-md mb-6">
-                ถามฉันเกี่ยวกับสถานที่ท่องเที่ยว แนะนำเส้นทาง
-                หรืออะไรก็ได้เกี่ยวกับการเดินทาง
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                {[
-                  "แนะนำสถานที่ท่องเที่ยวในกรุงเทพฯ",
-                  "ร้านอาหารอร่อยๆ ใกล้ตลาดจตุจักร",
-                  "เส้นทางท่องเที่ยวเชียงใหม่ 3 วัน 2 คืน",
-                  "ที่พักราคาประหยัดในภูเก็ต",
-                ].map((suggestion, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="text-left justify-start h-auto py-3 px-4"
-                    onClick={() => {
-                      setInput(suggestion);
-                      handleSendWithQuery(suggestion);
-                    }}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              {message.role === "assistant" && (
+                <Avatar className="h-8 w-8 bg-primary">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    <Sparkles className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <Card
+                className={`max-w-[80%] py-0 gap-0 ${
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : ""
                 }`}
               >
-                {message.role === "assistant" && (
-                  <Avatar className="h-8 w-8 bg-primary">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      <Sparkles className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <Card
-                  className={`max-w-[80%] py-0 gap-0 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : ""
-                  }`}
-                >
-                  <CardContent className="p-3">
-                    {message.role === "assistant" ? (
-                      message.isNew && typingMessageId === message.id ? (
-                        <TypewriterMessage
-                          content={message.content}
-                          onComplete={() => {
-                            setTypingMessageId(null);
-                            setMessages((prev) =>
-                              prev.map((m) =>
-                                m.id === message.id ? { ...m, isNew: false } : m
-                              )
-                            );
-                          }}
-                          onSkip={() => {
-                            setTypingMessageId(null);
-                            setMessages((prev) =>
-                              prev.map((m) =>
-                                m.id === message.id ? { ...m, isNew: false } : m
-                              )
-                            );
-                          }}
-                        />
-                      ) : (
-                        <MarkdownRenderer
-                          content={message.content}
-                          className="text-sm"
-                        />
-                      )
+                <CardContent className="p-3">
+                  {message.role === "assistant" ? (
+                    message.isNew && typingMessageId === message.id ? (
+                      <TypewriterMessage
+                        content={message.content}
+                        onComplete={() => {
+                          setTypingMessageId(null);
+                          setMessages((prev) =>
+                            prev.map((m) =>
+                              m.id === message.id ? { ...m, isNew: false } : m
+                            )
+                          );
+                        }}
+                        onSkip={() => {
+                          setTypingMessageId(null);
+                          setMessages((prev) =>
+                            prev.map((m) =>
+                              m.id === message.id ? { ...m, isNew: false } : m
+                            )
+                          );
+                        }}
+                      />
                     ) : (
-                      <div className="text-sm whitespace-pre-wrap break-words">
-                        {message.content}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-                {message.role === "user" && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            ))
-          )}
+                      <MarkdownRenderer
+                        content={message.content}
+                        className="text-sm"
+                      />
+                    )
+                  ) : (
+                    <div className="text-sm whitespace-pre-wrap break-words">
+                      {message.content}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              {message.role === "user" && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+          ))}
 
           {isLoading && (
             <div className="flex gap-3 justify-start">
@@ -563,33 +544,5 @@ function AIChatContent() {
         <p className="text-xs text-muted-foreground mt-2">กด Enter เพื่อส่ง</p>
       </div>
     </div>
-  );
-}
-
-export default function AIChatPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col h-full">
-          <div className="flex items-center gap-3 pb-4">
-            <Skeleton className="h-10 w-10 rounded-lg" />
-            <div>
-              <Skeleton className="h-6 w-32 mb-1" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-          </div>
-          <Separator />
-          <div className="flex-1 py-8">
-            <div className="flex flex-col items-center justify-center">
-              <Skeleton className="h-20 w-20 rounded-full mb-4" />
-              <Skeleton className="h-6 w-48 mb-2" />
-              <Skeleton className="h-4 w-64" />
-            </div>
-          </div>
-        </div>
-      }
-    >
-      <AIChatContent />
-    </Suspense>
   );
 }

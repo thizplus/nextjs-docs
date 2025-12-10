@@ -78,8 +78,8 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 dark:from-gray-900 dark:to-gray-800 py-8">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-background">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl">ลงทะเบียน</CardTitle>
           <CardDescription>สร้างบัญชีผู้ใช้ STOU Smart Tour</CardDescription>

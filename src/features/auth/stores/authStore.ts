@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/shared/types/models';
 import type { LoginRequest, RegisterRequest } from '@/shared/types/request';
 import { authService } from '@/services';
-import { setAuthToken } from '@/shared/lib/api';
+import { setAuthToken, getErrorMessage } from '@/shared/lib/api';
 
 interface AuthState {
   // State
@@ -74,6 +74,8 @@ export const useAuthStore = create<AuthState>()(
           } else {
             throw new Error(response.message || 'เข้าสู่ระบบไม่สำเร็จ');
           }
+        } catch (error) {
+          throw new Error(getErrorMessage(error));
         } finally {
           set({ isLoading: false });
         }
@@ -90,6 +92,8 @@ export const useAuthStore = create<AuthState>()(
           } else {
             throw new Error(response.message || 'ลงทะเบียนไม่สำเร็จ');
           }
+        } catch (error) {
+          throw new Error(getErrorMessage(error));
         } finally {
           set({ isLoading: false });
         }

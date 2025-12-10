@@ -85,7 +85,8 @@ apiClient.interceptors.response.use(
 export const getErrorMessage = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as { message?: string; error?: string };
-    return data?.message || data?.error || error.message || 'เกิดข้อผิดพลาด';
+    // Prefer 'error' field for specific error details, fallback to 'message'
+    return data?.error || data?.message || error.message || 'เกิดข้อผิดพลาด';
   }
   if (error instanceof Error) {
     return error.message;

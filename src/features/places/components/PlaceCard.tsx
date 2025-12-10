@@ -27,7 +27,7 @@ export function PlaceCard({ place, showDistance = true }: PlaceCardProps) {
   const favoriteItem = {
     type: "place",
     title: place.name,
-    url: `https://www.google.com/maps/place/?q=place_id:${place.placeId}`,
+    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
     thumbnailUrl: place.photoUrl,
     description: place.address,
     metadata: {

@@ -100,7 +100,7 @@ export function ResultCard({ result }: ResultCardProps) {
                   item={{
                     type: "place",
                     title: result.title,
-                    url: `https://www.google.com/maps/place/?q=place_id:${result.id}`,
+                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.title)}&query_place_id=${result.id}`,
                     thumbnailUrl: result.thumbnail,
                     description: result.description,
                     metadata: {

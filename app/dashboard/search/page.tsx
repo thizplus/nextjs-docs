@@ -344,7 +344,7 @@ function SearchContent() {
                                 item={{
                                   type: "place",
                                   title: place.title,
-                                  url: `https://www.google.com/maps/place/?q=place_id:${place.placeId}`,
+                                  url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.title)}&query_place_id=${place.placeId}`,
                                   thumbnailUrl: place.thumbnailUrl,
                                   description: place.snippet,
                                   metadata: {

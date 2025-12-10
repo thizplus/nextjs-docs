@@ -101,7 +101,7 @@ export default function PlaceDetailPage({
             item={{
               type: "place",
               title: place.name,
-              url: `https://www.google.com/maps/place/?q=place_id:${place.placeId}`,
+              url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
               thumbnailUrl: place.photos?.[0]?.url,
               description: place.formattedAddress,
               metadata: {
@@ -223,7 +223,7 @@ export default function PlaceDetailPage({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">รีวิว</h2>
               <a
-                href={`https://www.google.com/maps/place/?q=place_id:${place.placeId}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

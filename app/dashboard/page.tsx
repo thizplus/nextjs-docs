@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { SearchBar } from "@/features/search";
 import { PlaceCard, usePlaceSearch } from "@/features/places";
+import { useBatchCheckItemsInFolders } from "@/features/folders";
+import { useBatchCheckFavorites } from "@/features/favorites";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { MapPin, Sparkles, AlertCircle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { useAuth } from "@/shared/hooks";
 
 export default function DashboardHomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const isSearching = searchQuery.trim().length > 0;
+  const { isAuthenticated } = useAuth();
 
   // ค้นหาตาม query หรือสถานที่ยอดนิยมในกรุงเทพฯ
   const { data: placesData, isLoading, error } = usePlaceSearch(
@@ -23,6 +27,52 @@ export default function DashboardHomePage() {
   );
 
   const places = placesData?.results || [];
+
+  // Generate URLs for batch check (only when authenticated)
+  const placeUrls = useMemo(() => {
+    if (!isAuthenticated || places.length === 0) return [];
+    return places.map((place) =>
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`
+    );
+  }, [places, isAuthenticated]);
+
+  // Batch check folder status (1 request instead of N)
+  const { data: folderCheckData } = useBatchCheckItemsInFolders(
+    placeUrls,
+    isAuthenticated && placeUrls.length > 0
+  );
+
+  // Create a map for quick lookup
+  const folderStatusMap = useMemo(() => {
+    if (!folderCheckData?.items) return {};
+    const map: Record<string, boolean> = {};
+    for (const [url, status] of Object.entries(folderCheckData.items)) {
+      map[url] = status.isSaved;
+    }
+    return map;
+  }, [folderCheckData]);
+
+  // Generate externalIds for batch favorite check
+  const placeIds = useMemo(() => {
+    if (!isAuthenticated || places.length === 0) return [];
+    return places.map((place) => place.placeId);
+  }, [places, isAuthenticated]);
+
+  // Batch check favorite status (1 request instead of N)
+  const { data: favoriteCheckData } = useBatchCheckFavorites(
+    placeIds,
+    isAuthenticated && placeIds.length > 0
+  );
+
+  // Create a map for quick lookup
+  const favoriteStatusMap = useMemo(() => {
+    if (!favoriteCheckData?.items) return {};
+    const map: Record<string, boolean> = {};
+    for (const [extId, status] of Object.entries(favoriteCheckData.items)) {
+      map[extId] = status.isFavorite;
+    }
+    return map;
+  }, [favoriteCheckData]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -131,9 +181,18 @@ export default function DashboardHomePage() {
         {/* Places Grid */}
         {!isLoading && !error && places.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {places.map((place) => (
-              <PlaceCard key={place.placeId} place={place} showDistance={false} />
-            ))}
+            {places.map((place) => {
+              const placeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`;
+              return (
+                <PlaceCard
+                  key={place.placeId}
+                  place={place}
+                  showDistance={false}
+                  isInFolder={folderStatusMap[placeUrl] ?? false}
+                  isFavorite={favoriteStatusMap[place.placeId] ?? false}
+                />
+              );
+            })}
           </div>
         )}
 

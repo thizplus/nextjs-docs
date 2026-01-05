@@ -49,6 +49,30 @@ const nextConfig: NextConfig = {
         hostname: "api.dicebear.com",
         pathname: "/**",
       },
+      // LINE Profile Pictures
+      {
+        protocol: "https",
+        hostname: "profile.line-scdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.line-scdn.net",
+      },
+      // Cloudflare R2 Storage
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "*.cloudflarestorage.com",
+      },
+      // Allow pub-* subdomains (Cloudflare R2 public URLs)
+      {
+        protocol: "https",
+        hostname: "pub-*.r2.dev",
+      },
     ],
   },
 };

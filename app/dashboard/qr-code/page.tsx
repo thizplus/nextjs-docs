@@ -13,14 +13,66 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
-import { QrCode, Download, Share2, Copy, Check } from "lucide-react";
+import { QrCode, Download, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import {
+  LineIcon,
+  FacebookIcon,
+  XIcon,
+  TikTokIcon,
+  InstagramIcon,
+  WhatsAppIcon,
+} from "@/shared/components/common/ShareButton";
+
+// Platform configurations for sharing
+const platforms = [
+  {
+    id: "line",
+    name: "LINE",
+    color: "#00B900",
+    icon: LineIcon,
+    getUrl: (url: string, text: string) =>
+      `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+  },
+  {
+    id: "facebook",
+    name: "Facebook",
+    color: "#1877F2",
+    icon: FacebookIcon,
+    getUrl: (url: string) =>
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  },
+  {
+    id: "twitter",
+    name: "X",
+    color: "#000000",
+    icon: XIcon,
+    getUrl: (url: string, text: string) =>
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    color: "#000000",
+    icon: TikTokIcon,
+    getUrl: null, // Copy link only
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    color: "#E4405F",
+    icon: InstagramIcon,
+    getUrl: null, // Copy link only
+  },
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    color: "#25D366",
+    icon: WhatsAppIcon,
+    getUrl: (url: string, text: string) =>
+      `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`,
+  },
+];
 
 export default function QRCodePage() {
   const [url, setUrl] = useState("https://stou-smart-tour.ac.th");
@@ -30,11 +82,15 @@ export default function QRCodePage() {
   // Generate QR Code URL using Google Charts API (mockup)
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(url)}`;
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success("คัดลอก URL ไปยังคลิปบอร์ดแล้ว");
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success("คัดลอก URL ไปยังคลิปบอร์ดแล้ว");
+    } catch {
+      toast.error("คัดลอกไม่สำเร็จ");
+    }
   };
 
   const handleDownload = () => {
@@ -49,28 +105,17 @@ export default function QRCodePage() {
     toast.success("QR Code ถูกดาวน์โหลดแล้ว");
   };
 
-  const handleShare = (platform: string) => {
+  const handleShare = (platform: (typeof platforms)[0]) => {
     const message = `สแกน QR Code นี้: ${url}`;
-    let shareUrl = "";
 
-    switch (platform) {
-      case "line":
-        shareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(message)}`;
-        break;
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        break;
-      case "x":
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
-        break;
-      case "instagram":
-        toast.info("กรุณาแชร์ QR Code โดยการ screenshot และโพสต์ใน Instagram");
-        return;
+    if (platform.getUrl) {
+      const shareUrl = platform.getUrl(url, message);
+      window.open(shareUrl, "_blank", "width=600,height=400");
+    } else {
+      // Copy link for TikTok/Instagram
+      navigator.clipboard.writeText(url);
+      toast.success(`คัดลอกลิงก์แล้ว - แปะใน ${platform.name} ได้เลย`);
     }
-
-    window.open(shareUrl, "_blank", "width=600,height=400");
-
-    toast.success(`กำลังแชร์ไปยัง ${platform}`);
   };
 
   return (
@@ -90,7 +135,7 @@ export default function QRCodePage() {
 
       <Separator />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
         {/* Input Section */}
         <Card>
           <CardHeader>
@@ -143,8 +188,8 @@ export default function QRCodePage() {
             </div>
 
             {/* Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-900">
+            <div className="bg-card border border-border rounded-lg p-3">
+              <p className="text-sm text-foreground">
                 <strong>คำแนะนำ:</strong> QR Code จะถูกสร้างอัตโนมัติเมื่อคุณใส่ URL
                 คุณสามารถดาวน์โหลดหรือแชร์ได้ทันที
               </p>
@@ -162,7 +207,7 @@ export default function QRCodePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* QR Code Display */}
-            <div className="flex justify-center p-6 bg-gray-50 rounded-lg">
+            <div className="flex justify-center p-6 bg-muted rounded-lg">
               {url ? (
                 <img
                   src={qrCodeUrl}
@@ -170,7 +215,7 @@ export default function QRCodePage() {
                   className="border-4 border-white shadow-lg rounded-lg"
                 />
               ) : (
-                <div className="w-64 h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+                <div className="w-64 h-64 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg">
                   <div className="text-center text-muted-foreground">
                     <QrCode className="h-12 w-12 mx-auto mb-2" />
                     <p>ใส่ URL เพื่อสร้าง QR Code</p>
@@ -181,7 +226,7 @@ export default function QRCodePage() {
 
             {/* Action Buttons */}
             {url && (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Button
                   onClick={handleDownload}
                   className="w-full"
@@ -191,48 +236,26 @@ export default function QRCodePage() {
                   ดาวน์โหลด QR Code
                 </Button>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full" size="lg">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      แชร์ QR Code
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
-                    <DropdownMenuItem onClick={() => handleShare("line")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-[#00B900] rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">L</span>
-                        </div>
-                        <span>แชร์ไป LINE</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare("facebook")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-[#1877F2] rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">f</span>
-                        </div>
-                        <span>แชร์ไป Facebook</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare("x")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-black rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">𝕏</span>
-                        </div>
-                        <span>แชร์ไป X (Twitter)</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare("instagram")}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">IG</span>
-                        </div>
-                        <span>แชร์ไป Instagram</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Share Icons */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground text-center">แชร์ไปยัง</p>
+                  <div className="flex justify-center gap-2 flex-wrap">
+                    {platforms.map((platform) => {
+                      const Icon = platform.icon;
+                      return (
+                        <button
+                          key={platform.id}
+                          onClick={() => handleShare(platform)}
+                          className="w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                          style={{ backgroundColor: platform.color }}
+                          title={`แชร์ไปยัง ${platform.name}`}
+                        >
+                          <Icon className="w-4 h-4 text-white" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

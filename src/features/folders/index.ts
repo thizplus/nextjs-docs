@@ -15,6 +15,8 @@ export {
   useDeleteFolderItem,
   useReorderFolderItems,
   useCheckItemInFolders,
+  useBatchCheckItemsInFolders,
+  useUploadToFolder,
 } from './hooks';
 
-export { CreateFolderDialog, AddToFolderDialog } from './components';
+export { CreateFolderDialog, AddToFolderDialog, FileUploader } from './components';

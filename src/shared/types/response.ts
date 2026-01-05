@@ -120,6 +120,17 @@ export interface FolderSummary {
   name: string;
 }
 
+export interface BatchCheckItemsResponse {
+  items: Record<string, CheckItemInFoldersResponse>;
+}
+
+export interface UploadItemResponse {
+  item: FolderItem;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+}
+
 // Re-export for convenience
 export type { FolderDetail, Folder, FolderItem };
 
@@ -133,6 +144,10 @@ export interface FavoriteListResponse {
 export interface CheckFavoriteResponse {
   isFavorite: boolean;
   favoriteId?: string;
+}
+
+export interface BatchCheckFavoritesResponse {
+  items: Record<string, CheckFavoriteResponse>;
 }
 
 // Re-export for convenience

@@ -1,11 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Rating } from "@/shared/components/common/Rating";
 import { FavoriteButton } from "@/shared/components/common/FavoriteButton";
+import { FolderButton } from "@/shared/components/common/FolderButton";
 import { ShareButton } from "@/shared/components/common/ShareButton";
 import { MapPin } from "lucide-react";
 import type { PlaceResult } from "@/shared/types/models";
+import { useAuth } from "@/shared/hooks";
 
 const PRICE_LEVELS: Record<number, string> = {
   0: "ฟรี",
@@ -18,16 +22,54 @@ const PRICE_LEVELS: Record<number, string> = {
 interface PlaceCardProps {
   place: PlaceResult;
   showDistance?: boolean;
+  /** Pre-fetched folder status for this place */
+  isInFolder?: boolean;
+  /** Pre-fetched favorite status for this place */
+  isFavorite?: boolean;
+  /** Use dashboard route for authenticated users (default: true) */
+  useDashboardRoute?: boolean;
 }
 
-export function PlaceCard({ place, showDistance = true }: PlaceCardProps) {
+export function PlaceCard({
+  place,
+  showDistance = true,
+  isInFolder,
+  isFavorite,
+  useDashboardRoute = true,
+}: PlaceCardProps) {
+  const { isAuthenticated, hasHydrated } = useAuth();
   const category = place.types?.[0] || "สถานที่";
 
-  // สร้าง item สำหรับ FavoriteButton
+  // Link to dashboard route for authenticated users, public route for guests
+  // IMPORTANT: Use public path until hydrated to avoid hydration mismatch
+  const detailPath = hasHydrated && useDashboardRoute && isAuthenticated
+    ? `/dashboard/place/${place.placeId}`
+    : `/place/${place.placeId}`;
+
+  const placeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`;
+
+  // สร้าง item สำหรับ FavoriteButton (heart toggle)
   const favoriteItem = {
+    type: "place" as const,
+    externalId: place.placeId,
+    title: place.name,
+    url: placeUrl,
+    thumbnailUrl: place.photoUrl,
+    rating: place.rating,
+    reviewCount: place.reviewCount,
+    address: place.address,
+    metadata: {
+      lat: place.lat,
+      lng: place.lng,
+      types: place.types,
+    },
+  };
+
+  // สร้าง item สำหรับ FolderButton (add to folder)
+  const folderItem = {
     type: "place",
     title: place.name,
-    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
+    url: placeUrl,
     thumbnailUrl: place.photoUrl,
     description: place.address,
     metadata: {
@@ -42,7 +84,7 @@ export function PlaceCard({ place, showDistance = true }: PlaceCardProps) {
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow py-0 gap-0">
-      <Link href={`/dashboard/place/${place.placeId}`}>
+      <Link href={detailPath}>
         <div className="relative aspect-video overflow-hidden">
           {place.photoUrl ? (
             <img
@@ -58,17 +100,31 @@ export function PlaceCard({ place, showDistance = true }: PlaceCardProps) {
             </div>
           )}
           <div className="absolute top-2 right-2 flex gap-1">
-            <div onClick={(e) => e.preventDefault()}>
-              <FavoriteButton
-                item={favoriteItem}
-                size="sm"
-                variant="default"
-              />
-            </div>
+            {/* Show FavoriteButton and FolderButton only when logged in */}
+            {hasHydrated && isAuthenticated && (
+              <>
+                <div onClick={(e) => e.preventDefault()}>
+                  <FavoriteButton
+                    item={favoriteItem}
+                    size="sm"
+                    variant="default"
+                    initialIsFavorite={isFavorite}
+                  />
+                </div>
+                <div onClick={(e) => e.preventDefault()}>
+                  <FolderButton
+                    item={folderItem}
+                    size="sm"
+                    variant="default"
+                    isSaved={isInFolder}
+                  />
+                </div>
+              </>
+            )}
             <div onClick={(e) => e.preventDefault()}>
               <ShareButton
                 title={place.name}
-                url={`/dashboard/place/${place.placeId}`}
+                url={detailPath}
                 size="sm"
                 variant="default"
               />
@@ -78,7 +134,7 @@ export function PlaceCard({ place, showDistance = true }: PlaceCardProps) {
       </Link>
 
       <CardContent className="p-4">
-        <Link href={`/dashboard/place/${place.placeId}`} className="block">
+        <Link href={detailPath} className="block">
           <h3 className="font-semibold text-lg mb-1 line-clamp-1 hover:text-primary">
             {place.name}
           </h3>

@@ -6,7 +6,7 @@ import type {
   NearbySearchRequest,
 } from '@/shared/types/request';
 import type { PlaceSearchResponse } from '@/shared/types/response';
-import type { PlaceDetail } from '@/shared/types/models';
+import type { PlaceDetail, PlaceDetailEnhanced } from '@/shared/types/models';
 
 export const placesService = {
   /**
@@ -42,6 +42,21 @@ export const placesService = {
   ): Promise<ApiResponse<PlaceSearchResponse>> => {
     const { data } = await apiClient.get<ApiResponse<PlaceSearchResponse>>(
       SEARCH_API.NEARBY,
+      { params }
+    );
+    return data;
+  },
+
+  /**
+   * Get enhanced place details with AI-generated content
+   * Only authenticated users will receive AI content
+   */
+  getPlaceDetailEnhanced: async (
+    placeId: string,
+    params?: { lat?: number; lng?: number }
+  ): Promise<ApiResponse<PlaceDetailEnhanced>> => {
+    const { data } = await apiClient.get<ApiResponse<PlaceDetailEnhanced>>(
+      SEARCH_API.PLACE_DETAIL_ENHANCED(placeId),
       { params }
     );
     return data;

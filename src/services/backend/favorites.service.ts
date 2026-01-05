@@ -10,6 +10,7 @@ import type {
   FavoriteListResponse,
   Favorite,
   CheckFavoriteResponse,
+  BatchCheckFavoritesResponse,
 } from '@/shared/types/response';
 
 export const favoritesService = {
@@ -71,6 +72,19 @@ export const favoritesService = {
     const { data } = await apiClient.post<ApiResponse<Favorite | null>>(
       FAVORITE_API.TOGGLE,
       request
+    );
+    return data;
+  },
+
+  /**
+   * Batch check if items are favorited
+   */
+  batchCheck: async (
+    externalIds: string[]
+  ): Promise<ApiResponse<BatchCheckFavoritesResponse>> => {
+    const { data } = await apiClient.post<ApiResponse<BatchCheckFavoritesResponse>>(
+      FAVORITE_API.CHECK_BATCH,
+      { externalIds }
     );
     return data;
   },

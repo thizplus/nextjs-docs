@@ -13,4 +13,6 @@ export {
   useDeleteFolderItem,
   useReorderFolderItems,
   useCheckItemInFolders,
+  useBatchCheckItemsInFolders,
+  useUploadToFolder,
 } from './useFolders';

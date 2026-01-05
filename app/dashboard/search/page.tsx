@@ -11,6 +11,8 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { FavoriteButton } from "@/shared/components/common/FavoriteButton";
+import { FolderButton } from "@/shared/components/common/FolderButton";
+import { ShareButton } from "@/shared/components/common/ShareButton";
 import { Rating } from "@/shared/components/common/Rating";
 import { AlertCircle, Search, ExternalLink, ChevronLeft, ChevronRight, MapPin, Play, Loader2 } from "lucide-react";
 import type { ImageResult } from "@/shared/types/models";
@@ -340,24 +342,49 @@ function SearchContent() {
                                   {place.snippet}
                                 </p>
                               </div>
-                              <FavoriteButton
-                                item={{
-                                  type: "place",
-                                  title: place.title,
-                                  url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.title)}&query_place_id=${place.placeId}`,
-                                  thumbnailUrl: place.thumbnailUrl,
-                                  description: place.snippet,
-                                  metadata: {
-                                    placeId: place.placeId,
-                                    lat: place.lat,
-                                    lng: place.lng,
+                              <div className="flex gap-1">
+                                <FavoriteButton
+                                  item={{
+                                    type: "place",
+                                    externalId: place.placeId,
+                                    title: place.title,
+                                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.title)}&query_place_id=${place.placeId}`,
+                                    thumbnailUrl: place.thumbnailUrl,
                                     rating: place.rating,
                                     reviewCount: place.reviewCount,
-                                    types: place.types,
-                                  },
-                                }}
-                                size="sm"
-                              />
+                                    address: place.snippet,
+                                    metadata: {
+                                      lat: place.lat,
+                                      lng: place.lng,
+                                      types: place.types,
+                                    },
+                                  }}
+                                  size="sm"
+                                />
+                                <FolderButton
+                                  item={{
+                                    type: "place",
+                                    title: place.title,
+                                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.title)}&query_place_id=${place.placeId}`,
+                                    thumbnailUrl: place.thumbnailUrl,
+                                    description: place.snippet,
+                                    metadata: {
+                                      placeId: place.placeId,
+                                      lat: place.lat,
+                                      lng: place.lng,
+                                      rating: place.rating,
+                                      reviewCount: place.reviewCount,
+                                      types: place.types,
+                                    },
+                                  }}
+                                  size="sm"
+                                />
+                                <ShareButton
+                                  title={place.title}
+                                  url={`/place/${place.placeId}`}
+                                  size="sm"
+                                />
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -398,15 +425,24 @@ function SearchContent() {
                             </div>
                           </a>
                           <CardContent className="p-3">
-                            <h3 className="font-medium text-sm mb-1 line-clamp-2">
-                              {video.title}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">{video.source}</p>
-                            {video.viewCount && (
-                              <p className="text-xs text-muted-foreground">
-                                {Number(video.viewCount).toLocaleString()} ครั้ง
-                              </p>
-                            )}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-sm mb-1 line-clamp-2">
+                                  {video.title}
+                                </h3>
+                                <p className="text-xs text-muted-foreground">{video.source}</p>
+                                {video.viewCount && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {Number(video.viewCount).toLocaleString()} ครั้ง
+                                  </p>
+                                )}
+                              </div>
+                              <ShareButton
+                                title={video.title}
+                                url={`https://www.youtube.com/watch?v=${video.videoId}`}
+                                size="sm"
+                              />
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
@@ -567,15 +603,24 @@ function SearchContent() {
                       </div>
                     </a>
                     <CardContent className="p-3">
-                      <h3 className="font-medium text-sm mb-1 line-clamp-2">
-                        {result.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">{result.channelTitle}</p>
-                      {result.viewCount && (
-                        <p className="text-xs text-muted-foreground">
-                          {Number(result.viewCount).toLocaleString()} ครั้ง
-                        </p>
-                      )}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm mb-1 line-clamp-2">
+                            {result.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">{result.channelTitle}</p>
+                          {result.viewCount && (
+                            <p className="text-xs text-muted-foreground">
+                              {Number(result.viewCount).toLocaleString()} ครั้ง
+                            </p>
+                          )}
+                        </div>
+                        <ShareButton
+                          title={result.title}
+                          url={`https://www.youtube.com/watch?v=${result.videoId}`}
+                          size="sm"
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Rating } from "@/shared/components/common/Rating";
 import { FavoriteButton } from "@/shared/components/common/FavoriteButton";
+import { FolderButton } from "@/shared/components/common/FolderButton";
 import { ShareButton } from "@/shared/components/common/ShareButton";
 import { MapPin, ExternalLink } from "lucide-react";
 
@@ -97,6 +98,22 @@ export function ResultCard({ result }: ResultCardProps) {
             <div className="absolute top-2 right-2 flex gap-1">
               <div onClick={(e) => e.preventDefault()}>
                 <FavoriteButton
+                  item={{
+                    type: "place",
+                    externalId: result.id,
+                    title: result.title,
+                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.title)}&query_place_id=${result.id}`,
+                    thumbnailUrl: result.thumbnail,
+                    rating: result.rating,
+                    reviewCount: result.reviewCount,
+                    address: result.description,
+                  }}
+                  size="sm"
+                  variant="default"
+                />
+              </div>
+              <div onClick={(e) => e.preventDefault()}>
+                <FolderButton
                   item={{
                     type: "place",
                     title: result.title,

@@ -4,3 +4,4 @@ export { aiService } from './ai.service';
 export { foldersService } from './folders.service';
 export { favoritesService } from './favorites.service';
 export { utilityService, formatDistance, calculateDistanceLocal } from './utility.service';
+export { userService } from './user.service';

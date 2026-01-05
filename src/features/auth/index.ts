@@ -22,4 +22,4 @@ export {
 } from './hooks';
 
 // Components
-export { LoginForm, RegisterForm, AuthGuard } from './components';
+export { LoginForm, RegisterForm, AuthGuard, LoginAnimation } from './components';

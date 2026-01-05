@@ -42,7 +42,7 @@ export default function ProfilePage() {
         <CardContent className="p-6">
           <div className="flex items-start gap-6 flex-wrap">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`} />
+              <AvatarImage src={user.avatar} />
               <AvatarFallback className="text-2xl">{user.firstName?.[0] || 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1">

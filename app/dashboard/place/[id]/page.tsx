@@ -3,9 +3,13 @@
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { usePlaceDetail } from "@/features/places";
+import {
+  usePlaceDetail,
+  AIContentSection,
+} from "@/features/places";
 import { Rating } from "@/shared/components/common/Rating";
 import { FavoriteButton } from "@/shared/components/common/FavoriteButton";
+import { FolderButton } from "@/shared/components/common/FolderButton";
 import { ShareButton } from "@/shared/components/common/ShareButton";
 import { ImageSlider } from "@/shared/components/common/ImageSlider";
 import { Button } from "@/shared/components/ui/button";
@@ -36,6 +40,7 @@ export default function PlaceDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  // Use basic place detail hook (fast) - AI content loads separately
   const { data: place, isLoading, error } = usePlaceDetail(id);
 
   if (isLoading) {
@@ -98,6 +103,23 @@ export default function PlaceDetailPage({
         </div>
         <div className="flex gap-2">
           <FavoriteButton
+            item={{
+              type: "place",
+              externalId: place.placeId,
+              title: place.name,
+              url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
+              thumbnailUrl: place.photos?.[0]?.url,
+              rating: place.rating,
+              reviewCount: place.reviewCount,
+              address: place.formattedAddress,
+              metadata: {
+                lat: place.lat,
+                lng: place.lng,
+                types: place.types,
+              },
+            }}
+          />
+          <FolderButton
             item={{
               type: "place",
               title: place.name,
@@ -216,6 +238,11 @@ export default function PlaceDetailPage({
             </Accordion>
           </CardContent>
         </Card>
+
+        {/* AI Content - Loads separately */}
+        <AIContentSection placeId={id} placeName={place.name} />
+
+        <Separator />
 
         {/* Reviews */}
         {reviews.length > 0 && (

@@ -19,6 +19,8 @@ import type {
   FolderItemListResponse,
   ShareFolderResponse,
   CheckItemInFoldersResponse,
+  BatchCheckItemsResponse,
+  UploadItemResponse,
 } from '@/shared/types/response';
 
 export const foldersService = {
@@ -183,6 +185,46 @@ export const foldersService = {
     const { data } = await apiClient.get<ApiResponse<CheckItemInFoldersResponse>>(
       FOLDER_API.ITEMS_CHECK,
       { params: { url } }
+    );
+    return data;
+  },
+
+  /**
+   * Batch check if items are saved in any folder
+   */
+  batchCheckItems: async (urls: string[]): Promise<ApiResponse<BatchCheckItemsResponse>> => {
+    const { data } = await apiClient.post<ApiResponse<BatchCheckItemsResponse>>(
+      FOLDER_API.ITEMS_CHECK_BATCH,
+      { urls }
+    );
+    return data;
+  },
+
+  /**
+   * Upload file to folder
+   */
+  uploadItem: async (
+    folderId: string,
+    file: File,
+    onProgress?: (progress: number) => void
+  ): Promise<ApiResponse<UploadItemResponse>> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const { data } = await apiClient.post<ApiResponse<UploadItemResponse>>(
+      FOLDER_API.ITEMS_UPLOAD(folderId),
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(progress);
+          }
+        },
+      }
     );
     return data;
   },

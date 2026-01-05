@@ -1,16 +1,145 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import { useUser, useAuthStore } from "@/features/auth";
+import { userService } from "@/services";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Label } from "@/shared/components/ui/label";
-import { Switch } from "@/shared/components/ui/switch";
+import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
-import { Settings, Globe, Shield, Palette, Sun, Moon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
+import {
+  Settings,
+  Globe,
+  Palette,
+  Sun,
+  Moon,
+  Camera,
+  Loader2,
+  Save,
+  Trash2,
+  User as UserIcon
+} from "lucide-react";
+
+const profileSchema = z.object({
+  firstName: z.string().min(1, "กรุณากรอกชื่อ").max(50, "ชื่อต้องไม่เกิน 50 ตัวอักษร"),
+  lastName: z.string().min(1, "กรุณากรอกนามสกุล").max(50, "นามสกุลต้องไม่เกิน 50 ตัวอักษร"),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const user = useUser();
+  const fetchProfile = useAuthStore((state) => state.fetchProfile);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty },
+    reset,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+    },
+  });
+
+  // Reset form when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [user, reset]);
+
+  const onSubmit = async (data: ProfileFormData) => {
+    setIsLoading(true);
+    try {
+      await userService.updateProfile({
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+      await fetchProfile();
+      toast.success("บันทึกข้อมูลสำเร็จ");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "เกิดข้อผิดพลาด");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("กรุณาเลือกไฟล์รูปภาพ");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ไฟล์ต้องมีขนาดไม่เกิน 5MB");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      await userService.updateAvatar(file);
+      await fetchProfile();
+      toast.success("อัปโหลดรูปโปรไฟล์สำเร็จ");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "อัปโหลดไม่สำเร็จ");
+    } finally {
+      setIsUploadingAvatar(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    if (!confirm("ต้องการลบรูปโปรไฟล์?")) return;
+
+    try {
+      await userService.deleteAvatar();
+      await fetchProfile();
+      toast.success("ลบรูปโปรไฟล์สำเร็จ");
+    } catch {
+      toast.error("ลบไม่สำเร็จ");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -22,7 +151,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-2xl font-bold">ตั้งค่า</h1>
           <p className="text-sm text-muted-foreground">
-            จัดการการตั้งค่าบัญชี
+            จัดการข้อมูลโปรไฟล์และการตั้งค่าบัญชี
           </p>
         </div>
       </div>
@@ -30,6 +159,160 @@ export default function SettingsPage() {
       <Separator />
 
       <div className="grid gap-6">
+        {/* Profile Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserIcon className="h-5 w-5" />
+              ข้อมูลโปรไฟล์
+            </CardTitle>
+            <CardDescription>
+              แก้ไขข้อมูลส่วนตัวและรูปโปรไฟล์
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Avatar Section */}
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <Avatar className="h-24 w-24 cursor-pointer" onClick={handleAvatarClick}>
+                  <AvatarImage src={user.avatar} />
+                  <AvatarFallback className="text-2xl">
+                    {user.firstName?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                  disabled={isUploadingAvatar}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAvatarClick}
+                  disabled={isUploadingAvatar}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  เปลี่ยนรูป
+                </Button>
+
+                {user.avatar && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteAvatar}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    ลบรูป
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Profile Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Email (read-only) */}
+              <div className="space-y-2">
+                <Label>อีเมล</Label>
+                <Input
+                  value={user.email || "-"}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">
+                  ไม่สามารถเปลี่ยนแปลงได้
+                </p>
+              </div>
+
+              {/* First Name */}
+              <div className="space-y-2">
+                <Label htmlFor="firstName">ชื่อ *</Label>
+                <Input
+                  id="firstName"
+                  {...register("firstName")}
+                  placeholder="กรอกชื่อ"
+                />
+                {errors.firstName && (
+                  <p className="text-destructive text-sm">
+                    {errors.firstName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Last Name */}
+              <div className="space-y-2">
+                <Label htmlFor="lastName">นามสกุล *</Label>
+                <Input
+                  id="lastName"
+                  {...register("lastName")}
+                  placeholder="กรอกนามสกุล"
+                />
+                {errors.lastName && (
+                  <p className="text-destructive text-sm">
+                    {errors.lastName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Provider Info */}
+              <div className="space-y-2">
+                <Label>เข้าสู่ระบบด้วย</Label>
+                <div className="flex items-center gap-2">
+                  {user.authProvider === "google" && (
+                    <span className="px-3 py-1 bg-background text-foreground border rounded-full text-sm">
+                      Google
+                    </span>
+                  )}
+                  {user.authProvider === "line" && (
+                    <span className="px-3 py-1 bg-background text-foreground border rounded-full text-sm">
+                      LINE
+                    </span>
+                  )}
+                  {user.authProvider === "local" && (
+                    <span className="px-3 py-1 bg-background text-foreground border rounded-full text-sm">
+                      อีเมล
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading || !isDirty}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    กำลังบันทึก...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    บันทึกข้อมูล
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Appearance */}
         <Card>
           <CardHeader>
@@ -38,7 +321,7 @@ export default function SettingsPage() {
               รูปลักษณ์
             </CardTitle>
             <CardDescription>
-              ปรับแต่งรูปลักษณ์ของแอป
+              ปรับแต่งธีมของแอป
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -79,82 +362,43 @@ export default function SettingsPage() {
                 </div>
               </RadioGroup>
             </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="compact-view">มุมมองแบบกระชับ</Label>
-                <p className="text-sm text-muted-foreground">
-                  แสดงเนื้อหามากขึ้นในหน้าจอ
-                </p>
-              </div>
-              <Switch id="compact-view" />
-            </div>
           </CardContent>
         </Card>
 
-        {/* Language & Region */}
+        {/* Language */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
-              ภาษาและภูมิภาค
+              ภาษา
             </CardTitle>
             <CardDescription>
-              เลือกภาษาและการตั้งค่าภูมิภาค
+              เลือกภาษาที่ต้องการใช้งาน
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="thai-language">ภาษาไทย</Label>
-                <p className="text-sm text-muted-foreground">
-                  แสดงเนื้อหาเป็นภาษาไทย
-                </p>
+          <CardContent>
+            <RadioGroup defaultValue="th" className="grid grid-cols-2 gap-4">
+              <div>
+                <RadioGroupItem value="th" id="lang-th" className="peer sr-only" />
+                <Label
+                  htmlFor="lang-th"
+                  className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  🇹🇭 ไทย
+                </Label>
               </div>
-              <Switch id="thai-language" defaultChecked />
-            </div>
+              <div>
+                <RadioGroupItem value="en" id="lang-en" className="peer sr-only" disabled />
+                <Label
+                  htmlFor="lang-en"
+                  className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 opacity-50 cursor-not-allowed"
+                >
+                  🇺🇸 English (เร็วๆ นี้)
+                </Label>
+              </div>
+            </RadioGroup>
           </CardContent>
         </Card>
-
-        {/* Privacy & Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              ความเป็นส่วนตัวและความปลอดภัย
-            </CardTitle>
-            <CardDescription>
-              จัดการการตั้งค่าความเป็นส่วนตัว
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="public-profile">โปรไฟล์สาธารณะ</Label>
-                <p className="text-sm text-muted-foreground">
-                  ให้ผู้อื่นเห็นโปรไฟล์และ folder สาธารณะของคุณ
-                </p>
-              </div>
-              <Switch id="public-profile" defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="search-history">บันทึกประวัติการค้นหา</Label>
-                <p className="text-sm text-muted-foreground">
-                  เก็บบันทึกประวัติการค้นหาของคุณ
-                </p>
-              </div>
-              <Switch id="search-history" defaultChecked />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-4">
-          <Button variant="outline">รีเซ็ตการตั้งค่า</Button>
-          <Button>บันทึกการเปลี่ยนแปลง</Button>
-        </div>
       </div>
     </div>
   );

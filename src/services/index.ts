@@ -9,6 +9,7 @@ export {
   foldersService,
   favoritesService,
   utilityService,
+  userService,
   formatDistance,
   calculateDistanceLocal,
 } from './backend';

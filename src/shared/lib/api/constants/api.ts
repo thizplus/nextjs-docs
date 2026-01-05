@@ -7,11 +7,18 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 export const AUTH_API = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  // OAuth
+  GOOGLE_AUTH: '/auth/google',
+  GOOGLE_CALLBACK: '/auth/google/callback',
+  LINE_AUTH: '/auth/line',
+  LINE_CALLBACK: '/auth/line/callback',
 } as const;
 
 // ==================== User Endpoints ====================
 export const USER_API = {
   PROFILE: '/users/profile',
+  UPDATE_PROFILE: '/users/profile', // PATCH for partial updates
+  AVATAR: '/users/avatar',
 } as const;
 
 // ==================== Search Endpoints ====================
@@ -23,6 +30,7 @@ export const SEARCH_API = {
   VIDEO_DETAIL: (videoId: string) => `/search/videos/${videoId}`,
   PLACES: '/search/places',
   PLACE_DETAIL: (placeId: string) => `/search/places/${placeId}`,
+  PLACE_DETAIL_ENHANCED: (placeId: string) => `/search/places/${placeId}/enhanced`,
   NEARBY: '/search/nearby',
   HISTORY: '/search/history',
   HISTORY_DELETE: (id: string) => `/search/history/${id}`,
@@ -46,8 +54,10 @@ export const FOLDER_API = {
   SHARE: (id: string) => `/folders/${id}/share`,
   PUBLIC: (id: string) => `/folders/public/${id}`,
   ITEMS: (id: string) => `/folders/${id}/items`,
+  ITEMS_UPLOAD: (id: string) => `/folders/${id}/items/upload`,
   ITEMS_REORDER: (id: string) => `/folders/${id}/items/reorder`,
   ITEMS_CHECK: '/folders/items/check',
+  ITEMS_CHECK_BATCH: '/folders/items/check/batch',
   ITEM_UPDATE: (itemId: string) => `/folders/items/${itemId}`,
   ITEM_DELETE: (itemId: string) => `/folders/items/${itemId}`,
 } as const;
@@ -58,6 +68,7 @@ export const FAVORITE_API = {
   CREATE: '/favorites',
   DELETE: (id: string) => `/favorites/${id}`,
   CHECK: '/favorites/check',
+  CHECK_BATCH: '/favorites/check/batch',
   TOGGLE: '/favorites/toggle',
 } as const;
 

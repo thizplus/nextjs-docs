@@ -15,6 +15,7 @@ interface AuthState {
 
   // Actions
   setAuth: (token: string, user: User) => void;
+  setToken: (token: string) => void;
   setUser: (user: User) => void;
   setLoading: (loading: boolean) => void;
   clearAuth: () => void;
@@ -23,6 +24,7 @@ interface AuthState {
   // Async Actions
   login: (credentials: LoginRequest) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
+  loginWithOAuth: (token: string) => Promise<void>;
   fetchProfile: () => Promise<void>;
   logout: () => void;
 }
@@ -43,6 +45,14 @@ export const useAuthStore = create<AuthState>()(
         set({
           token,
           user,
+          isAuthenticated: true,
+        });
+      },
+
+      setToken: (token) => {
+        setAuthToken(token);
+        set({
+          token,
           isAuthenticated: true,
         });
       },
@@ -99,6 +109,28 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      loginWithOAuth: async (token: string) => {
+        set({ isLoading: true });
+        try {
+          // Set the token first
+          get().setToken(token);
+
+          // Fetch user profile
+          const response = await authService.getProfile();
+
+          if (response.success && response.data) {
+            set({ user: response.data });
+          } else {
+            throw new Error('ไม่สามารถดึงข้อมูลผู้ใช้ได้');
+          }
+        } catch (error) {
+          get().clearAuth();
+          throw new Error(getErrorMessage(error));
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       fetchProfile: async () => {
         const { token } = get();
         if (!token) return;
@@ -130,8 +162,14 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         token: state.token,
         user: state.user,
+        isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Auth hydration error:', error);
+          return;
+        }
+
         state?.setHasHydrated(true);
 
         // Re-set auth token after hydration

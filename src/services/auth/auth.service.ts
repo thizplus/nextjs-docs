@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/lib/api';
-import { AUTH_API, USER_API } from '@/shared/lib/api/constants/api';
+import { AUTH_API, USER_API, API_BASE_URL } from '@/shared/lib/api/constants/api';
 import type { ApiResponse } from '@/shared/types/common';
 import type {
   LoginRequest,
@@ -11,7 +11,7 @@ import type { User } from '@/shared/types/models';
 
 export const authService = {
   /**
-   * Login with email and password
+   * Login with email and password (disabled for social-only login)
    */
   login: async (credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
@@ -22,7 +22,7 @@ export const authService = {
   },
 
   /**
-   * Register new user
+   * Register new user (disabled for social-only login)
    */
   register: async (userData: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
@@ -59,5 +59,41 @@ export const authService = {
   deleteAccount: async (): Promise<ApiResponse<null>> => {
     const { data } = await apiClient.delete<ApiResponse<null>>(USER_API.PROFILE);
     return data;
+  },
+
+  // ==================== OAuth Methods ====================
+
+  /**
+   * Get Google OAuth URL
+   */
+  getGoogleAuthUrl: (): string => {
+    const frontendUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${API_BASE_URL}${AUTH_API.GOOGLE_AUTH}?frontend_url=${encodeURIComponent(frontendUrl)}`;
+  },
+
+  /**
+   * Redirect to Google OAuth
+   */
+  redirectToGoogle: (): void => {
+    if (typeof window !== 'undefined') {
+      window.location.href = authService.getGoogleAuthUrl();
+    }
+  },
+
+  /**
+   * Get LINE OAuth URL
+   */
+  getLineAuthUrl: (): string => {
+    const frontendUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${API_BASE_URL}${AUTH_API.LINE_AUTH}?frontend_url=${encodeURIComponent(frontendUrl)}`;
+  },
+
+  /**
+   * Redirect to LINE OAuth
+   */
+  redirectToLine: (): void => {
+    if (typeof window !== 'undefined') {
+      window.location.href = authService.getLineAuthUrl();
+    }
   },
 };

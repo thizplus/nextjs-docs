@@ -196,8 +196,9 @@ export function useAddFolderItem() {
       queryClient.invalidateQueries({ queryKey: foldersKeys.detail(variables.folderId) });
       queryClient.invalidateQueries({ queryKey: foldersKeys.items(variables.folderId) });
       queryClient.invalidateQueries({ queryKey: foldersKeys.lists() });
-      // Invalidate check query to update heart icon
+      // Invalidate check queries to update folder icon
       queryClient.invalidateQueries({ queryKey: [...foldersKeys.all, 'check'] });
+      queryClient.invalidateQueries({ queryKey: [...foldersKeys.all, 'check-batch'] });
     },
   });
 }
@@ -243,8 +244,9 @@ export function useDeleteFolderItem(folderId: string) {
       queryClient.invalidateQueries({ queryKey: foldersKeys.detail(folderId) });
       queryClient.invalidateQueries({ queryKey: foldersKeys.items(folderId) });
       queryClient.invalidateQueries({ queryKey: foldersKeys.lists() });
-      // Invalidate check query to update heart icon
+      // Invalidate check queries to update folder icon
       queryClient.invalidateQueries({ queryKey: [...foldersKeys.all, 'check'] });
+      queryClient.invalidateQueries({ queryKey: [...foldersKeys.all, 'check-batch'] });
     },
   });
 }
@@ -283,5 +285,54 @@ export function useCheckItemInFolders(url: string, enabled = true) {
       throw new Error(response.message);
     },
     enabled: enabled && !!url,
+  });
+}
+
+/**
+ * Batch check if items are saved in any folder
+ * Returns a map of URL -> CheckItemInFoldersResponse
+ */
+export function useBatchCheckItemsInFolders(urls: string[], enabled = true) {
+  return useQuery({
+    queryKey: [...foldersKeys.all, 'check-batch', urls] as const,
+    queryFn: async () => {
+      if (urls.length === 0) {
+        return { items: {} };
+      }
+      const response = await foldersService.batchCheckItems(urls);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message);
+    },
+    enabled: enabled && urls.length > 0,
+  });
+}
+
+/**
+ * Upload file to folder mutation
+ */
+export function useUploadToFolder(folderId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      file,
+      onProgress,
+    }: {
+      file: File;
+      onProgress?: (progress: number) => void;
+    }) => {
+      const response = await foldersService.uploadItem(folderId, file, onProgress);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: foldersKeys.detail(folderId) });
+      queryClient.invalidateQueries({ queryKey: foldersKeys.items(folderId) });
+      queryClient.invalidateQueries({ queryKey: foldersKeys.lists() });
+    },
   });
 }

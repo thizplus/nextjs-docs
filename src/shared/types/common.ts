@@ -45,7 +45,7 @@ export type SearchType = 'all' | 'website' | 'image' | 'video' | 'map' | 'ai';
 /**
  * Favorite/Folder item types
  */
-export type ItemType = 'place' | 'website' | 'image' | 'video' | 'link';
+export type ItemType = 'place' | 'website' | 'image' | 'video' | 'link' | 'pdf';
 
 /**
  * User roles

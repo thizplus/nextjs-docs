@@ -4,6 +4,7 @@ export {
   favoritesKeys,
   useFavorites,
   useCheckFavorite,
+  useBatchCheckFavorites,
   useAddFavorite,
   useRemoveFavorite,
   useToggleFavorite,

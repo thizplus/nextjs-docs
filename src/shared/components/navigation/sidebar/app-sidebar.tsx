@@ -14,6 +14,8 @@ import {
   Globe,
   Plane,
   QrCode,
+  Languages,
+  Heart,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -73,12 +75,22 @@ const data = {
       icon: Folder,
     },
     {
+      title: "รายการโปรด",
+      url: "/dashboard/favorites",
+      icon: Heart,
+    },
+    {
       title: "โปรไฟล์",
       url: "/dashboard/profile",
       icon: User,
     },
   ],
   navSecondary: [
+    {
+      title: "แปลภาษา",
+      url: "/dashboard/translate",
+      icon: Languages,
+    },
     {
       title: "QR Code",
       url: "/dashboard/qr-code",
@@ -127,11 +139,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={user ? {
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`,
+          avatar: user.avatar,
         } : {
           name: "Guest",
           email: "guest@stou.ac.th",
-          avatar: "/avatars/guest.jpg",
+          avatar: undefined,
         }} />
       </SidebarFooter>
     </Sidebar>

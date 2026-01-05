@@ -1,23 +1,8 @@
 import type { Metadata } from "next";
-import { Roboto, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Toaster } from "@/shared/components/ui/sonner";
 import { ThemeProvider } from "@/shared/components/layouts/theme-provider";
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
-  display: "swap",
-});
-
-const notoSansThai = Noto_Sans_Thai({
-  subsets: ["thai"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-noto-sans-thai",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "STOU Smart Tour",
@@ -31,9 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" suppressHydrationWarning>
-      <body
-        className={`${roboto.className} ${notoSansThai.className} ${roboto.variable} ${notoSansThai.variable} antialiased`}
-      >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="antialiased">
         <QueryProvider>
           <ThemeProvider
             attribute="class"

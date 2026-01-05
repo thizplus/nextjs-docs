@@ -8,6 +8,8 @@ export const placesKeys = {
   search: (params?: PlaceSearchRequest) => [...placesKeys.all, 'search', params] as const,
   nearby: (params?: NearbySearchRequest) => [...placesKeys.all, 'nearby', params] as const,
   detail: (placeId: string) => [...placesKeys.all, 'detail', placeId] as const,
+  detailEnhanced: (placeId: string, lat?: number, lng?: number) =>
+    [...placesKeys.all, 'detail-enhanced', placeId, lat, lng] as const,
 };
 
 /**
@@ -61,5 +63,29 @@ export function usePlaceDetail(placeId: string, enabled = true) {
     },
     enabled: enabled && !!placeId,
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
+}
+
+/**
+ * Enhanced place detail hook with AI-generated content
+ * AI content only available for authenticated users
+ */
+export function usePlaceDetailEnhanced(
+  placeId: string,
+  options?: { lat?: number; lng?: number; enabled?: boolean }
+) {
+  const { lat, lng, enabled = true } = options || {};
+
+  return useQuery({
+    queryKey: placesKeys.detailEnhanced(placeId, lat, lng),
+    queryFn: async () => {
+      const response = await placesService.getPlaceDetailEnhanced(placeId, { lat, lng });
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message);
+    },
+    enabled: enabled && !!placeId,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours - AI content is cached on backend
   });
 }

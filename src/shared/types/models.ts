@@ -11,9 +11,12 @@ export interface User {
   firstName: string;
   lastName: string;
   avatar: string;
+  studentId?: string;
+  language: 'th' | 'en';
+  theme: 'light' | 'dark';
   role: UserRole;
   isActive: boolean;
-  studentId?: string;
+  authProvider: 'local' | 'google' | 'line';
   createdAt: string;
   updatedAt: string;
 }
@@ -100,6 +103,45 @@ export interface PlaceDetail {
   photos?: PlacePhoto[];
   distance?: number;
   distanceText?: string;
+}
+
+// ==================== Enhanced Place Detail (AI) ====================
+
+export interface AIPlaceOverview {
+  summary: string;
+  history: string;
+  highlights: string[];
+  bestTimeToVisit: string;
+  tips: string[];
+  generatedAt: string;
+}
+
+export interface PlaceFAQ {
+  question: string;
+  answer: string;
+}
+
+export interface PlaceGuideInfo {
+  quickFacts: string[];
+  talkingPoints: string[];
+  commonQuestions: PlaceFAQ[];
+}
+
+export interface RelatedVideo {
+  videoId: string;
+  title: string;
+  thumbnailUrl: string;
+  channelTitle: string;
+  duration?: string;
+  viewCount?: number;
+}
+
+export interface PlaceDetailEnhanced extends PlaceDetail {
+  // AI Status: "ready", "generating", "unavailable"
+  aiStatus: 'ready' | 'generating' | 'unavailable';
+  aiOverview?: AIPlaceOverview;
+  relatedVideos?: RelatedVideo[];
+  guideInfo?: PlaceGuideInfo;
 }
 
 // ==================== Search History ====================

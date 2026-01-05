@@ -49,6 +49,27 @@ export function useCheckFavorite(params: CheckFavoriteRequest, enabled = true) {
 }
 
 /**
+ * Batch check if items are favorited
+ * Returns a map of externalId -> CheckFavoriteResponse
+ */
+export function useBatchCheckFavorites(externalIds: string[], enabled = true) {
+  return useQuery({
+    queryKey: [...favoritesKeys.all, 'check-batch', externalIds] as const,
+    queryFn: async () => {
+      if (externalIds.length === 0) {
+        return { items: {} };
+      }
+      const response = await favoritesService.batchCheck(externalIds);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message);
+    },
+    enabled: enabled && externalIds.length > 0,
+  });
+}
+
+/**
  * Add to favorites mutation
  */
 export function useAddFavorite() {
@@ -64,6 +85,9 @@ export function useAddFavorite() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: favoritesKeys.lists() });
+      // Invalidate check queries to update heart icon
+      queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check'] });
+      queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check-batch'] });
     },
   });
 }
@@ -83,6 +107,9 @@ export function useRemoveFavorite() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: favoritesKeys.lists() });
+      // Invalidate check queries to update heart icon
+      queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check'] });
+      queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check-batch'] });
     },
   });
 }
@@ -103,7 +130,9 @@ export function useToggleFavorite() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: favoritesKeys.lists() });
+      // Invalidate check queries to update heart icon
       queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check'] });
+      queryClient.invalidateQueries({ queryKey: [...favoritesKeys.all, 'check-batch'] });
     },
   });
 }

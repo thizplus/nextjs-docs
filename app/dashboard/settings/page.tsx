@@ -373,30 +373,13 @@ export default function SettingsPage() {
               ภาษา
             </CardTitle>
             <CardDescription>
-              เลือกภาษาที่ต้องการใช้งาน
+              ภาษาที่ใช้งานในระบบ
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RadioGroup defaultValue="th" className="grid grid-cols-2 gap-4">
-              <div>
-                <RadioGroupItem value="th" id="lang-th" className="peer sr-only" />
-                <Label
-                  htmlFor="lang-th"
-                  className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                >
-                  🇹🇭 ไทย
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="en" id="lang-en" className="peer sr-only" disabled />
-                <Label
-                  htmlFor="lang-en"
-                  className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 opacity-50 cursor-not-allowed"
-                >
-                  🇺🇸 English (เร็วๆ นี้)
-                </Label>
-              </div>
-            </RadioGroup>
+            <div className="flex items-center justify-center gap-2 rounded-md border-2 border-primary bg-popover p-4">
+              🇹🇭 ไทย
+            </div>
           </CardContent>
         </Card>
       </div>

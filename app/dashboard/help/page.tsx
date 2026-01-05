@@ -9,7 +9,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { HelpCircle, Mail, MessageCircle, Search } from "lucide-react";
+import { HelpCircle, Mail, Search } from "lucide-react";
 import { useState } from "react";
 
 const faqs = [
@@ -142,40 +142,25 @@ export default function HelpPage() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <MessageCircle className="h-5 w-5" />
-              Live Chat
-            </CardTitle>
-            <CardDescription>
-              พูดคุยกับทีมสนับสนุนแบบ real-time
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full">เริ่มแชท</Button>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Mail className="h-5 w-5" />
-              ติดต่ออีเมล
-            </CardTitle>
-            <CardDescription>
-              ส่งคำถามของคุณผ่านอีเมล
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full">
-              support@stou-tour.ac.th
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Contact */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Mail className="h-5 w-5" />
+            ติดต่อเรา
+          </CardTitle>
+          <CardDescription>
+            ส่งคำถามหรือข้อเสนอแนะของคุณผ่านอีเมล
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" className="w-full" asChild>
+            <a href="mailto:toutour.com@gmail.com">
+              toutour.com@gmail.com
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* FAQs */}
       <Card>

@@ -112,58 +112,60 @@ export default function PublicPlaceDetailPage({
         )}
 
         {/* Title & Actions */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{place.name}</h1>
-            <div className="flex items-center gap-4">
-              <Rating rating={place.rating} size="md" />
-              <span className="text-muted-foreground">
-                ({place.reviewCount.toLocaleString()} รีวิว)
-              </span>
-              {place.types?.[0] && <Badge>{place.types[0]}</Badge>}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {/* Show FavoriteButton and FolderButton only when logged in */}
-            {hasHydrated && isAuthenticated && (
-              <>
-                <FavoriteButton
-                  item={{
-                    type: "place",
-                    externalId: place.placeId,
-                    title: place.name,
-                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
-                    thumbnailUrl: place.photos?.[0]?.url,
-                    rating: place.rating,
-                    reviewCount: place.reviewCount,
-                    address: place.formattedAddress,
-                    metadata: {
-                      lat: place.lat,
-                      lng: place.lng,
-                      types: place.types,
-                    },
-                  }}
-                />
-                <FolderButton
-                  item={{
-                    type: "place",
-                    title: place.name,
-                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
-                    thumbnailUrl: place.photos?.[0]?.url,
-                    description: place.formattedAddress,
-                    metadata: {
-                      placeId: place.placeId,
-                      lat: place.lat,
-                      lng: place.lng,
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold flex-1 min-w-0">{place.name}</h1>
+            <div className="flex gap-1 flex-shrink-0">
+              {/* Show FavoriteButton and FolderButton only when logged in */}
+              {hasHydrated && isAuthenticated && (
+                <>
+                  <FavoriteButton
+                    item={{
+                      type: "place",
+                      externalId: place.placeId,
+                      title: place.name,
+                      url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
+                      thumbnailUrl: place.photos?.[0]?.url,
                       rating: place.rating,
                       reviewCount: place.reviewCount,
-                      types: place.types,
-                    },
-                  }}
-                />
-              </>
-            )}
-            <ShareButton title={place.name} url={`/place/${place.placeId}`} />
+                      address: place.formattedAddress,
+                      metadata: {
+                        lat: place.lat,
+                        lng: place.lng,
+                        types: place.types,
+                      },
+                    }}
+                    size="sm"
+                  />
+                  <FolderButton
+                    item={{
+                      type: "place",
+                      title: place.name,
+                      url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.placeId}`,
+                      thumbnailUrl: place.photos?.[0]?.url,
+                      description: place.formattedAddress,
+                      metadata: {
+                        placeId: place.placeId,
+                        lat: place.lat,
+                        lng: place.lng,
+                        rating: place.rating,
+                        reviewCount: place.reviewCount,
+                        types: place.types,
+                      },
+                    }}
+                    size="sm"
+                  />
+                </>
+              )}
+              <ShareButton title={place.name} url={`/place/${place.placeId}`} size="sm" />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <Rating rating={place.rating} size="md" />
+            <span className="text-muted-foreground text-sm">
+              ({place.reviewCount.toLocaleString()} รีวิว)
+            </span>
+            {place.types?.[0] && <Badge variant="secondary">{place.types[0]}</Badge>}
           </div>
         </div>
 

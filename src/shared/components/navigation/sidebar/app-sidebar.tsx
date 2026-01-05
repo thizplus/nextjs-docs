@@ -12,7 +12,7 @@ import {
   Image,
   Video,
   Globe,
-  Plane,
+  MapPin,
   QrCode,
   Languages,
   Heart,
@@ -80,6 +80,11 @@ const data = {
       icon: Heart,
     },
     {
+      title: "Virtual Tour",
+      url: "/dashboard/virtual-tour",
+      icon: Globe,
+    },
+    {
       title: "โปรไฟล์",
       url: "/dashboard/profile",
       icon: User,
@@ -120,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Plane className="size-4" />
+                  <MapPin className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">STOU Smart Tour</span>

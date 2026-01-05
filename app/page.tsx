@@ -8,7 +8,6 @@ import { PlaceCard, usePlaceSearch } from '@/features/places';
 import { Button } from '@/shared/components/ui/button';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { FeatureGate } from '@/shared/components/auth';
 import { useAuth } from '@/shared/hooks';
 import {
   MapPin,
@@ -17,8 +16,8 @@ import {
   X,
   Heart,
   Folder,
-  Search,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -26,12 +25,13 @@ export default function HomePage() {
   const { isAuthenticated, isGuest } = useAuth();
   const isSearching = searchQuery.trim().length > 0;
 
+  // Only call API when user is searching
   const { data: placesData, isLoading, error } = usePlaceSearch(
     {
-      q: isSearching ? searchQuery : 'สถานที่ท่องเที่ยว กรุงเทพ',
-      pageSize: isSearching ? 12 : 8,
+      q: searchQuery,
+      pageSize: 12,
     },
-    true
+    isSearching // Only enable when searching
   );
 
   const places = placesData?.results || [];
@@ -128,91 +128,76 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Search Results / Featured Places */}
-        <section className="py-8 md:py-12">
-          <div className="container mx-auto px-4 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                {isSearching ? (
-                  <>
-                    <h2 className="text-2xl font-bold">
-                      ผลการค้นหา &quot;{searchQuery}&quot;
-                    </h2>
-                    <p className="text-muted-foreground mt-1">
-                      พบ {places.length} สถานที่
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl font-bold">สถานที่ยอดนิยม</h2>
-                    <p className="text-muted-foreground mt-1">
-                      สถานที่ท่องเที่ยวที่นักท่องเที่ยวแนะนำ
-                    </p>
-                  </>
-                )}
-              </div>
-              {isSearching && (
+        {/* Search Results - Only show when searching */}
+        {isSearching && (
+          <section className="py-8 md:py-12">
+            <div className="container mx-auto px-4 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    ผลการค้นหา &quot;{searchQuery}&quot;
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    {isLoading ? 'กำลังค้นหา...' : `พบ ${places.length} สถานที่`}
+                  </p>
+                </div>
                 <Button variant="ghost" onClick={clearSearch} className="gap-2">
                   <X className="h-4 w-4" />
                   ล้างการค้นหา
                 </Button>
+              </div>
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-3">
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
 
-            {/* Loading State */}
-            {isLoading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="h-48 w-full rounded-lg" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))}
-              </div>
-            )}
+              {/* Error State */}
+              {error && !isLoading && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {error instanceof Error
+                      ? error.message
+                      : 'เกิดข้อผิดพลาดในการโหลดข้อมูล'}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {/* Error State */}
-            {error && !isLoading && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {error instanceof Error
-                    ? error.message
-                    : 'เกิดข้อผิดพลาดในการโหลดข้อมูล'}
-                </AlertDescription>
-              </Alert>
-            )}
+              {/* Places Grid */}
+              {!isLoading && !error && places.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {places.map((place) => (
+                    <PlaceCard key={place.placeId} place={place} showDistance={false} />
+                  ))}
+                </div>
+              )}
 
-            {/* Places Grid */}
-            {!isLoading && !error && places.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {places.map((place) => (
-                  <PlaceCard key={place.placeId} place={place} showDistance={false} />
-                ))}
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!isLoading && !error && places.length === 0 && (
-              <div className="text-center py-12">
-                <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  {isSearching
-                    ? `ไม่พบสถานที่สำหรับ "${searchQuery}"`
-                    : 'ไม่พบสถานที่ท่องเที่ยว'}
-                </p>
-                {isSearching && (
+              {/* Empty State */}
+              {!isLoading && !error && places.length === 0 && (
+                <div className="text-center py-12">
+                  <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    ไม่พบสถานที่สำหรับ &quot;{searchQuery}&quot;
+                  </p>
                   <Button variant="outline" onClick={clearSearch} className="mt-4">
                     ล้างการค้นหา
                   </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
-        {/* Quick Search Tags */}
+        {/* Quick Search Tags - Show when not searching */}
         {!isSearching && (
           <section className="py-8 bg-muted/30">
             <div className="container mx-auto px-4 space-y-4">
@@ -237,6 +222,7 @@ export default function HomePage() {
                     className="rounded-full"
                     onClick={() => handleSearch(place)}
                   >
+                    <Search className="h-3 w-3 mr-1" />
                     {place}
                   </Button>
                 ))}

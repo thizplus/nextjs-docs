@@ -29,7 +29,10 @@ export function Header() {
           <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-md">
             <MapPin className="size-5" />
           </div>
-          <span className="font-bold text-xl sm:inline">STOU Smart Tour</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-xl leading-none">STOU</span>
+            <span className="text-xs text-muted-foreground leading-none">Smart Tour</span>
+          </div>
         </Link>
 
         {/* Auth Section */}

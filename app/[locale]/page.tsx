@@ -315,7 +315,10 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              <span className="font-semibold">STOU Smart Tour</span>
+              <div className="flex flex-col leading-tight">
+                <span className="font-bold">STOU</span>
+                <span className="text-[10px] text-muted-foreground">Smart Tour</span>
+              </div>
             </div>
             <p className="text-sm text-muted-foreground">
               {t('footerDesc')}

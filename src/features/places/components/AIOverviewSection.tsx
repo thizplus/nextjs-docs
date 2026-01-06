@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import type { AIPlaceOverview } from "@/shared/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
@@ -16,14 +18,29 @@ interface AIOverviewSectionProps {
 }
 
 export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
+  const t = useTranslations("ai");
+  const locale = useLocale();
+  const [formattedDate, setFormattedDate] = useState<string>("");
+
+  // Format date on client-side only to avoid hydration mismatch
+  useEffect(() => {
+    if (overview.generatedAt) {
+      setFormattedDate(
+        new Date(overview.generatedAt).toLocaleDateString(
+          locale === "th" ? "th-TH" : "en-US"
+        )
+      );
+    }
+  }, [overview.generatedAt, locale]);
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">AI Overview</h2>
+        <h2 className="text-xl font-semibold">{t("aiOverview")}</h2>
         <Badge variant="secondary" className="text-xs">
-          AI Generated
+          {t("aiGenerated")}
         </Badge>
       </div>
 
@@ -42,7 +59,7 @@ export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <History className="h-4 w-4" />
-              ประวัติความเป็นมา
+              {t("historySection")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -59,7 +76,7 @@ export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Star className="h-4 w-4" />
-              ไฮไลท์
+              {t("highlights")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -81,7 +98,7 @@ export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Clock className="h-4 w-4" />
-              เวลาที่เหมาะแก่การเยี่ยมชม
+              {t("bestTimeToVisit")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -98,7 +115,7 @@ export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Lightbulb className="h-4 w-4" />
-              เคล็ดลับ
+              {t("tips")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,9 +132,9 @@ export function AIOverviewSection({ overview }: AIOverviewSectionProps) {
       )}
 
       {/* Generated At */}
-      {overview.generatedAt && (
+      {overview.generatedAt && formattedDate && (
         <p className="text-xs text-muted-foreground text-right">
-          สร้างโดย AI เมื่อ {new Date(overview.generatedAt).toLocaleDateString("th-TH")}
+          {t("generatedByAI", { date: formattedDate })}
         </p>
       )}
     </div>

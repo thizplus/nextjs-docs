@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { usePlaceDetailEnhanced, placesKeys } from "../hooks";
 import { AIOverviewSection } from "./AIOverviewSection";
 import { GuideInfoSection } from "./GuideInfoSection";
@@ -17,12 +18,12 @@ interface AIContentSectionProps {
   placeName: string;
 }
 
-function AILoadingSkeleton() {
+function AILoadingSkeleton({ generatingText }: { generatingText: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-primary">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm font-medium">กำลังสร้างข้อมูล AI... (อาจใช้เวลา 10-20 วินาที)</span>
+        <span className="text-sm font-medium">{generatingText}</span>
       </div>
       <Card>
         <CardContent className="pt-4 space-y-3">
@@ -44,6 +45,8 @@ function AILoadingSkeleton() {
 export function AIContentSection({ placeId, placeName }: AIContentSectionProps) {
   const queryClient = useQueryClient();
   const { data: enhancedData, isLoading, error } = usePlaceDetailEnhanced(placeId);
+  const t = useTranslations("ai");
+  const tPlace = useTranslations("place");
 
   // Poll when status is "generating"
   useEffect(() => {
@@ -78,7 +81,7 @@ export function AIContentSection({ placeId, placeName }: AIContentSectionProps) 
             <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">AI Content</h2>
           </div>
-          <AILoadingSkeleton />
+          <AILoadingSkeleton generatingText={t("generating")} />
         </div>
       </>
     );
@@ -94,7 +97,7 @@ export function AIContentSection({ placeId, placeName }: AIContentSectionProps) 
             <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">AI Content</h2>
           </div>
-          <AILoadingSkeleton />
+          <AILoadingSkeleton generatingText={t("generating")} />
         </div>
       </>
     );
@@ -121,7 +124,7 @@ export function AIContentSection({ placeId, placeName }: AIContentSectionProps) 
             value="videos"
             disabled={!enhancedData?.relatedVideos || enhancedData.relatedVideos.length === 0}
           >
-            วิดีโอ ({enhancedData?.relatedVideos?.length || 0})
+            {tPlace("videos")} ({enhancedData?.relatedVideos?.length || 0})
           </TabsTrigger>
         </TabsList>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { authService } from "@/services/auth/auth.service";
@@ -11,6 +12,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState<'google' | 'line' | null>(null);
   const [isLineBrowser, setIsLineBrowser] = useState(false);
+  const t = useTranslations("auth");
 
   // Detect LINE in-app browser
   useEffect(() => {
@@ -33,11 +35,11 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-bold">เข้าสู่ระบบ</h1>
+          <h1 className="text-2xl font-bold">{t("loginTitle")}</h1>
           <p className="text-muted-foreground text-sm text-balance">
             {isLineBrowser
-              ? "เข้าสู่ระบบด้วย LINE เพื่อใช้งาน"
-              : "เข้าสู่ระบบด้วย LINE หรือ Google เพื่อใช้งาน"}
+              ? t("loginWithLineOnly")
+              : t("loginDescription")}
           </p>
         </div>
         <div className="grid gap-4">
@@ -49,13 +51,13 @@ export function LoginForm({
             disabled={isLoading !== null}
           >
             {isLoading === 'line' ? (
-              <span className="animate-pulse">กำลังเข้าสู่ระบบ...</span>
+              <span className="animate-pulse">{t("loggingIn")}</span>
             ) : (
               <>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4" fill="currentColor">
                   <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                 </svg>
-                เข้าสู่ระบบด้วย LINE
+                {t("loginWithLine")}
               </>
             )}
           </Button>
@@ -65,7 +67,7 @@ export function LoginForm({
             <>
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                 <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                  หรือ
+                  {t("or")}
                 </span>
               </div>
               <Button
@@ -76,7 +78,7 @@ export function LoginForm({
                 disabled={isLoading !== null}
               >
                 {isLoading === 'google' ? (
-                  <span className="animate-pulse">กำลังเข้าสู่ระบบ...</span>
+                  <span className="animate-pulse">{t("loggingIn")}</span>
                 ) : (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
@@ -85,7 +87,7 @@ export function LoginForm({
                         fill="currentColor"
                       />
                     </svg>
-                    เข้าสู่ระบบด้วย Google
+                    {t("loginWithGoogle")}
                   </>
                 )}
               </Button>
@@ -93,9 +95,7 @@ export function LoginForm({
           )}
         </div>
         <div className="text-center text-sm text-muted-foreground">
-          เข้าสู่ระบบเพื่อบันทึกสถานที่โปรด
-          <br />
-          และประวัติการค้นหาของคุณ
+          {t("loginBenefit")}
         </div>
       </div>
     </div>

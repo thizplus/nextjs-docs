@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import {
   Folder,
   MoreHorizontal,
@@ -36,6 +37,17 @@ export function NavProjects({
 }) {
   const { isMobile } = useSidebar()
 
+  // Track mounted state to prevent hydration mismatch
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Use consistent value for SSR, then actual value after mount
+  const dropdownSide = mounted ? (isMobile ? "bottom" : "right") : "right"
+  const dropdownAlign = mounted ? (isMobile ? "end" : "start") : "start"
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
@@ -57,8 +69,8 @@ export function NavProjects({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-48"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
+                side={dropdownSide}
+                align={dropdownAlign}
               >
                 <DropdownMenuItem>
                   <Folder className="text-muted-foreground" />

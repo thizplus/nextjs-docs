@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import {
   Home,
   Search,
@@ -9,8 +10,6 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
-  Image,
-  Video,
   Globe,
   MapPin,
   QrCode,
@@ -32,90 +31,91 @@ import {
 } from "@/shared/components/ui/sidebar"
 import { useUser } from "@/features/auth"
 
-const data = {
-  navMain: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useUser()
+  const t = useTranslations("nav")
+  const tAuth = useTranslations("auth")
+
+  const navMain = [
     {
-      title: "หน้าแรก",
+      title: t("home"),
       url: "/dashboard",
       icon: Home,
       isActive: true,
     },
     {
-      title: "AI Assistant",
+      title: t("aiAssistant"),
       url: "/dashboard/ai",
       icon: Sparkles,
     },
     {
-      title: "ค้นหา",
+      title: t("search"),
       url: "/dashboard/search",
       icon: Search,
       isActive: true,
       items: [
         {
-          title: "ทั้งหมด",
+          title: t("all"),
           url: "/dashboard/search?type=all",
         },
         {
-          title: "เว็บไซต์",
+          title: t("website"),
           url: "/dashboard/search?type=website",
         },
         {
-          title: "รูปภาพ",
+          title: t("image"),
           url: "/dashboard/search?type=image",
         },
         {
-          title: "วิดีโอ",
+          title: t("video"),
           url: "/dashboard/search?type=video",
         },
       ],
     },
     {
-      title: "โฟลเดอร์ของฉัน",
+      title: t("myFolder"),
       url: "/dashboard/my-folder",
       icon: Folder,
     },
     {
-      title: "รายการโปรด",
+      title: t("favorites"),
       url: "/dashboard/favorites",
       icon: Heart,
     },
     {
-      title: "Virtual Tour",
+      title: t("virtualTour"),
       url: "/dashboard/virtual-tour",
       icon: Globe,
     },
     {
-      title: "โปรไฟล์",
+      title: t("profile"),
       url: "/dashboard/profile",
       icon: User,
     },
-  ],
-  navSecondary: [
+  ]
+
+  const navSecondary = [
     {
-      title: "แปลภาษา",
+      title: t("translate"),
       url: "/dashboard/translate",
       icon: Languages,
     },
     {
-      title: "QR Code",
+      title: t("qrCode"),
       url: "/dashboard/qr-code",
       icon: QrCode,
     },
     {
-      title: "ตั้งค่า",
+      title: t("settings"),
       url: "/dashboard/settings",
       icon: Settings,
     },
     {
-      title: "ช่วยเหลือ",
+      title: t("help"),
       url: "/dashboard/help",
       icon: HelpCircle,
     },
-  ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useUser()
+  ]
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -129,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">STOU Smart Tour</span>
-                  <span className="truncate text-xs">มสธ.</span>
+                  <span className="truncate text-xs">{t("stou")}</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -137,8 +137,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} label={t("usageMenu")} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user ? {
@@ -146,7 +146,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           email: user.email,
           avatar: user.avatar,
         } : {
-          name: "Guest",
+          name: tAuth("guest"),
           email: "guest@stou.ac.th",
           avatar: undefined,
         }} />

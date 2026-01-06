@@ -2,32 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Sparkles, Folder, User } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Home, Search, Sparkles, Folder, User, LucideIcon } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
-const navItems = [
+type NavKey = "home" | "search" | "aiAssistant" | "myFolder" | "profile";
+
+const navItems: { key: NavKey; href: string; icon: LucideIcon }[] = [
   {
-    title: "หน้าแรก",
+    key: "home",
     href: "/dashboard",
     icon: Home,
   },
   {
-    title: "ค้นหา",
+    key: "search",
     href: "/dashboard/search",
     icon: Search,
   },
   {
-    title: "AI",
+    key: "aiAssistant",
     href: "/dashboard/ai",
     icon: Sparkles,
   },
   {
-    title: "โฟลเดอร์",
+    key: "myFolder",
     href: "/dashboard/my-folder",
     icon: Folder,
   },
   {
-    title: "โปรไฟล์",
+    key: "profile",
     href: "/dashboard/profile",
     icon: User,
   },
@@ -35,6 +38,7 @@ const navItems = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
@@ -42,6 +46,8 @@ export function MobileBottomNav() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          // For AI, show shorter label on mobile
+          const label = item.key === "aiAssistant" ? "AI" : t(item.key);
 
           return (
             <Link
@@ -55,7 +61,7 @@ export function MobileBottomNav() {
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "fill-primary")} />
-              <span className="text-xs font-medium">{item.title}</span>
+              <span className="text-xs font-medium">{label}</span>
             </Link>
           );
         })}

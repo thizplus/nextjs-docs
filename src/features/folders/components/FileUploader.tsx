@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
+import { useTranslations } from "next-intl";
 import { Button } from "@/shared/components/ui/button";
 import { Progress } from "@/shared/components/ui/progress";
 import {
@@ -80,6 +81,7 @@ export function FileUploader({
 }: FileUploaderProps) {
   const [files, setFiles] = useState<FileWithProgress[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const t = useTranslations("upload");
 
   const uploadMutation = useUploadToFolder(folderId);
 
@@ -105,7 +107,7 @@ export function FileUploader({
         const maxSize = MAX_SIZES[type] || MAX_SIZES.image;
         if (file.size > maxSize) {
           toast.error(
-            `${file.name} ใหญ่เกินไป (สูงสุด ${formatSize(maxSize)})`
+            `${t("fileTooLarge", { name: file.name })} (${t("maxSizeIs", { size: Math.round(maxSize / (1024 * 1024)) })})`
           );
           return false;
         }
@@ -196,10 +198,10 @@ export function FileUploader({
     setIsUploading(false);
 
     if (successCount > 0) {
-      toast.success(`อัพโหลด ${successCount} ไฟล์สำเร็จ`);
+      toast.success(t("uploadComplete", { count: successCount }));
     }
     if (errorCount > 0) {
-      toast.error(`อัพโหลดไม่สำเร็จ ${errorCount} ไฟล์`);
+      toast.error(`${t("uploadFailed")} (${errorCount})`);
     }
 
     if (successCount > 0) {
@@ -229,10 +231,10 @@ export function FileUploader({
           <input {...getInputProps()} />
           <Upload className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
           {isDragActive ? (
-            <p className="text-sm text-primary">วางไฟล์ที่นี่...</p>
+            <p className="text-sm text-primary">{t("dropFilesHere")}</p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              ลากไฟล์มาวาง หรือคลิกเลือก
+              {t("dragOrClick")}
             </p>
           )}
         </div>
@@ -311,12 +313,12 @@ export function FileUploader({
                 {isUploading ? (
                   <>
                     <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    กำลังอัพโหลด...
+                    {t("uploading")}
                   </>
                 ) : (
                   <>
                     <Upload className="w-3 h-3 mr-1" />
-                    อัพโหลด {pendingCount} ไฟล์
+                    {t("uploadFiles", { count: pendingCount })}
                   </>
                 )}
               </Button>
@@ -326,7 +328,7 @@ export function FileUploader({
 
         {/* Info */}
         <p className="text-[10px] text-muted-foreground text-center">
-          รูป 10MB / PDF 20MB / วิดีโอ 100MB
+          {t("compactSizeInfo")}
         </p>
       </div>
     );
@@ -348,14 +350,14 @@ export function FileUploader({
         <input {...getInputProps()} />
         <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
         {isDragActive ? (
-          <p className="text-primary">วางไฟล์ที่นี่...</p>
+          <p className="text-primary">{t("dropFilesHere")}</p>
         ) : (
           <>
             <p className="text-foreground mb-2">
-              ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
+              {t("dragOrClick")}
             </p>
             <p className="text-sm text-muted-foreground">
-              รองรับ: รูปภาพ (10MB), PDF (20MB), วิดีโอ (100MB) - สูงสุด {maxFiles} ไฟล์
+              {t("supportedFormats", { count: maxFiles })}
             </p>
           </>
         )}
@@ -426,12 +428,12 @@ export function FileUploader({
               {isUploading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  กำลังอัพโหลด...
+                  {t("uploading")}
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  อัพโหลด {pendingCount} ไฟล์
+                  {t("uploadFiles", { count: pendingCount })}
                 </>
               )}
             </Button>

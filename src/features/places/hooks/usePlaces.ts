@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { placesService } from '@/services';
 import type { PlaceSearchRequest, NearbySearchRequest } from '@/shared/types/request';
 
@@ -24,6 +24,38 @@ export function usePlaceSearch(params: PlaceSearchRequest, enabled = true) {
         return response.data;
       }
       throw new Error(response.message);
+    },
+    enabled: enabled && !!params.q,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+}
+
+/**
+ * Infinite place search hook for Load More functionality
+ */
+export function useInfinitePlaceSearch(
+  params: Omit<PlaceSearchRequest, 'page'>,
+  enabled = true
+) {
+  return useInfiniteQuery({
+    queryKey: [...placesKeys.search(params), 'infinite'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await placesService.searchPlaces({
+        ...params,
+        page: pageParam,
+      });
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message);
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const totalPages = Math.ceil(lastPage.totalCount / lastPage.pageSize);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
     },
     enabled: enabled && !!params.q,
     staleTime: 60 * 60 * 1000, // 1 hour

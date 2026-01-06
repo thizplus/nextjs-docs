@@ -1,6 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export function LoginAnimation() {
+  const t = useTranslations("auth");
+
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-8 bg-primary overflow-hidden">
       {/* Multiple animated blobs */}
@@ -16,10 +20,10 @@ export function LoginAnimation() {
       <div className="relative z-10 text-center">
         <h2 className="text-4xl font-bold text-primary-foreground">STOU Smart Tour</h2>
         <p className="mt-4 text-xl text-primary-foreground/80">
-          ระบบค้นหาสถานที่ท่องเที่ยวอัจฉริยะ
+          {t("heroSubtitle")}
         </p>
         <p className="mt-2 text-primary-foreground/60">
-          สำหรับมัคคุเทศก์และนักท่องเที่ยว
+          {t("heroDesc")}
         </p>
       </div>
     </div>

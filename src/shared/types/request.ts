@@ -76,6 +76,7 @@ export interface PlaceSearchRequest {
   type?: string;
   page?: number;
   pageSize?: number;
+  lang?: string;
 }
 
 export interface NearbySearchRequest {
@@ -86,6 +87,7 @@ export interface NearbySearchRequest {
   keyword?: string;
   page?: number;
   pageSize?: number;
+  lang?: string;
 }
 
 // ==================== AI ====================
@@ -97,10 +99,12 @@ export interface AISearchRequest {
 
 export interface CreateChatRequest {
   query: string;
+  lang?: string;
 }
 
 export interface SendMessageRequest {
   message: string;
+  lang?: string;
 }
 
 export interface GetChatSessionsRequest {

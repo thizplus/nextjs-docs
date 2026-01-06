@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useLocale } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/routing";
 import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,40 +10,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const languages = [
-  { code: "th", name: "ไทย", flag: "🇹🇭" },
-  { code: "en", name: "English", flag: "🇺🇸" },
-];
+import { locales, localeNames, localeFlags, Locale } from "@/i18n/config";
 
 export function LanguageSwitcher() {
-  const [currentLang, setCurrentLang] = useState("th");
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const handleLanguageChange = (langCode: string) => {
-    setCurrentLang(langCode);
-    // TODO: Implement actual language switching logic
-    console.log("Language changed to:", langCode);
+  const handleLanguageChange = (newLocale: Locale) => {
+    router.replace(pathname, { locale: newLocale });
   };
-
-  const selectedLanguage = languages.find((lang) => lang.code === currentLang);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm">
           <Languages className="mr-2 h-4 w-4" />
-          <span>{selectedLanguage?.flag}</span>
+          <span>{localeFlags[locale]}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {languages.map((lang) => (
+        {locales.map((loc) => (
           <DropdownMenuItem
-            key={lang.code}
-            onClick={() => handleLanguageChange(lang.code)}
-            className="cursor-pointer"
+            key={loc}
+            onClick={() => handleLanguageChange(loc)}
+            className={`cursor-pointer ${locale === loc ? "bg-accent" : ""}`}
           >
-            <span className="mr-2">{lang.flag}</span>
-            {lang.name}
+            <span className="mr-2">{localeFlags[loc]}</span>
+            {localeNames[loc]}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

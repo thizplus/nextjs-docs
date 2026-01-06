@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -14,10 +15,12 @@ interface SearchBarProps {
 
 export function SearchBar({
   initialQuery = "",
-  placeholder = "พิมพ์ชื่อจังหวัด/สถานที่...",
+  placeholder,
   onSearch,
 }: SearchBarProps) {
   const router = useRouter();
+  const t = useTranslations("search");
+  const tCommon = useTranslations("common");
   const [query, setQuery] = useState(initialQuery);
 
   // Sync with initialQuery when it changes
@@ -43,7 +46,7 @@ export function SearchBar({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={placeholder}
+            placeholder={placeholder || t("placeholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-10 pr-4 h-12 text-base"
@@ -51,7 +54,7 @@ export function SearchBar({
         </div>
 
         <Button type="submit" className="h-12 px-6">
-          ค้นหา
+          {tCommon("search")}
         </Button>
       </div>
     </form>

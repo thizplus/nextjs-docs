@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -30,15 +31,6 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Switch } from "@/shared/components/ui/switch";
 import { useCreateFolder } from "../hooks";
 
-const createFolderSchema = z.object({
-  name: z
-    .string()
-    .min(1, "กรุณากรอกชื่อ Folder")
-    .max(100, "ชื่อต้องไม่เกิน 100 ตัวอักษร"),
-  description: z.string().max(500, "คำอธิบายต้องไม่เกิน 500 ตัวอักษร").optional(),
-  isPublic: z.boolean(),
-});
-
 type CreateFolderForm = {
   name: string;
   description?: string;
@@ -52,6 +44,18 @@ interface CreateFolderDialogProps {
 export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
   const [open, setOpen] = useState(false);
   const createFolder = useCreateFolder();
+  const t = useTranslations("folder");
+  const tValidation = useTranslations("validation");
+  const tCommon = useTranslations("common");
+
+  const createFolderSchema = z.object({
+    name: z
+      .string()
+      .min(1, tValidation("required", { field: tValidation("folderName") }))
+      .max(100, tValidation("maxLength", { field: tValidation("folderName"), max: "100" })),
+    description: z.string().max(500, tValidation("maxLength", { field: tValidation("folderDescription"), max: "500" })).optional(),
+    isPublic: z.boolean(),
+  });
 
   const form = useForm<CreateFolderForm>({
     resolver: zodResolver(createFolderSchema),
@@ -69,12 +73,12 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
         description: data.description || undefined,
         isPublic: data.isPublic,
       });
-      toast.success("สร้าง Folder สำเร็จ");
+      toast.success(t("created"));
       form.reset();
       setOpen(false);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "ไม่สามารถสร้าง Folder ได้"
+        error instanceof Error ? error.message : t("createFailed")
       );
     }
   };
@@ -84,9 +88,9 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>สร้าง Folder ใหม่</DialogTitle>
+          <DialogTitle>{t("createNewFolder")}</DialogTitle>
           <DialogDescription>
-            สร้าง Folder เพื่อจัดเก็บสถานที่ท่องเที่ยวที่คุณสนใจ
+            {t("noFoldersHint")}
           </DialogDescription>
         </DialogHeader>
 
@@ -97,9 +101,9 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ชื่อ Folder *</FormLabel>
+                  <FormLabel>{t("folderName")} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="เช่น ทริปเชียงใหม่" {...field} />
+                    <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,10 +115,10 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>คำอธิบาย</FormLabel>
+                  <FormLabel>{t("folderDescription")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="รายละเอียดเพิ่มเติม..."
+                      placeholder={t("descriptionPlaceholder")}
                       rows={3}
                       {...field}
                     />
@@ -130,9 +134,9 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-3">
                   <div className="space-y-0.5">
-                    <FormLabel>เปิดเป็นสาธารณะ</FormLabel>
+                    <FormLabel>{t("public")}</FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      ผู้อื่นสามารถดู Folder นี้ได้
+                      {t("sharePublic")}
                     </p>
                   </div>
                   <FormControl>
@@ -151,13 +155,13 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                ยกเลิก
+                {tCommon("cancel")}
               </Button>
               <Button type="submit" disabled={createFolder.isPending}>
                 {createFolder.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                สร้าง Folder
+                {t("createFolder")}
               </Button>
             </DialogFooter>
           </form>

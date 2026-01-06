@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useKeenSlider } from "keen-slider/react";
+import { useTranslations } from "next-intl";
 import "keen-slider/keen-slider.min.css";
 import { cn } from "@/shared/lib/utils";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -22,6 +23,7 @@ export function ImageSlider({
   enableZoom = true,
   className,
 }: ImageSliderProps) {
+  const t = useTranslations("place");
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -57,7 +59,7 @@ export function ImageSlider({
           className
         )}
       >
-        <p className="text-muted-foreground">ไม่มีรูปภาพ</p>
+        <p className="text-muted-foreground">{t("noImages")}</p>
       </div>
     );
   }

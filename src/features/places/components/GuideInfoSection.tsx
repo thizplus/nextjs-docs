@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { PlaceGuideInfo } from "@/shared/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
@@ -21,14 +22,16 @@ interface GuideInfoSectionProps {
 }
 
 export function GuideInfoSection({ guideInfo }: GuideInfoSectionProps) {
+  const t = useTranslations("ai");
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
         <BookOpen className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">Guide Info</h2>
+        <h2 className="text-xl font-semibold">{t("guideInfo")}</h2>
         <Badge variant="outline" className="text-xs">
-          For Tour Guides
+          {t("forTourGuides")}
         </Badge>
       </div>
 
@@ -38,7 +41,7 @@ export function GuideInfoSection({ guideInfo }: GuideInfoSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Info className="h-4 w-4" />
-              ข้อเท็จจริงที่น่าสนใจ
+              {t("quickFacts")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -60,7 +63,7 @@ export function GuideInfoSection({ guideInfo }: GuideInfoSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Mic className="h-4 w-4" />
-              จุดพูดคุยสำหรับไกด์
+              {t("talkingPoints")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -84,7 +87,7 @@ export function GuideInfoSection({ guideInfo }: GuideInfoSectionProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <HelpCircle className="h-4 w-4" />
-              คำถามที่พบบ่อย
+              {t("commonQuestions")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">

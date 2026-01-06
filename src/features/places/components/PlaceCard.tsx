@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Rating } from "@/shared/components/common/Rating";
@@ -11,12 +12,13 @@ import { MapPin } from "lucide-react";
 import type { PlaceResult } from "@/shared/types/models";
 import { useAuth } from "@/shared/hooks";
 
+// Google Places API price levels
 const PRICE_LEVELS: Record<number, string> = {
-  0: "ฟรี",
-  1: "฿",
-  2: "฿฿",
-  3: "฿฿฿",
-  4: "฿฿฿฿",
+  0: "",      // Free
+  1: "$",     // Inexpensive
+  2: "$$",    // Moderate
+  3: "$$$",   // Expensive
+  4: "$$$$",  // Very Expensive
 };
 
 interface PlaceCardProps {
@@ -38,7 +40,8 @@ export function PlaceCard({
   useDashboardRoute = true,
 }: PlaceCardProps) {
   const { isAuthenticated, hasHydrated } = useAuth();
-  const category = place.types?.[0] || "สถานที่";
+  const t = useTranslations("place");
+  const category = place.types?.[0] || t("defaultCategory");
 
   // Link to dashboard route for authenticated users, public route for guests
   // IMPORTANT: Use public path until hydrated to avoid hydration mismatch

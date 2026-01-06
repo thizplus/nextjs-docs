@@ -1,5 +1,7 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import {
   ChevronsUpDown,
   LogOut,
@@ -43,7 +45,17 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const logout = useLogout()
   const router = useRouter()
-  const { setTheme, theme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
+  const t = useTranslations("nav")
+  const tSettings = useTranslations("settings")
+  const tCommon = useTranslations("common")
+
+  // Track mounted state to prevent hydration mismatch with theme
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleProfileClick = () => {
     router.push("/dashboard/profile")
@@ -54,19 +66,24 @@ export function NavUser({
   }
 
   const getThemeIcon = () => {
-    if (theme === "dark") return <Moon className="h-4 w-4" />
+    if (!mounted) return <Sun className="h-4 w-4" />
+    if (resolvedTheme === "dark") return <Moon className="h-4 w-4" />
     return <Sun className="h-4 w-4" />
   }
 
   const toggleTheme = () => {
-    if (theme === "light") setTheme("dark")
+    if (resolvedTheme === "light") setTheme("dark")
     else setTheme("light")
   }
 
   const getThemeLabel = () => {
-    if (theme === "dark") return "มืด"
-    return "สว่าง"
+    if (!mounted) return tSettings("lightMode")
+    if (resolvedTheme === "dark") return tSettings("darkMode")
+    return tSettings("lightMode")
   }
+
+  // Use consistent value for SSR, then actual value after mount
+  const dropdownSide = mounted ? (isMobile ? "bottom" : "right") : "right"
 
   return (
     <SidebarMenu>
@@ -92,7 +109,7 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={dropdownSide}
             align="end"
             sideOffset={4}
           >
@@ -113,16 +130,16 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleProfileClick}>
               <User />
-              โปรไฟล์
+              {t("profile")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleTheme}>
               {getThemeIcon()}
-              ธีม: {getThemeLabel()}
+              {tSettings("theme")}: {getThemeLabel()}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
-              ออกจากระบบ
+              {tCommon("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

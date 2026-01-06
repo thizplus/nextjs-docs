@@ -1,39 +1,38 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { QueryProvider } from "@/providers/QueryProvider";
-import { Toaster } from "@/shared/components/ui/sonner";
-import { ThemeProvider } from "@/shared/components/layouts/theme-provider";
+import type { Metadata } from 'next';
+import { getLocale, getTranslations } from 'next-intl/server';
+import './globals.css';
 
-export const metadata: Metadata = {
-  title: "STOU Smart Tour",
-  description: "ระบบค้นหาข้อมูลท่องเที่ยวสำหรับนักศึกษา มหาวิทยาลัยสุโขทัยธรรมาธิราช",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata');
 
-export default function RootLayout({
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="th" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="antialiased">
-        <QueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-          <Toaster />
-        </QueryProvider>
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

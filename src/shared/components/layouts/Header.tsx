@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/shared/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
@@ -13,9 +14,12 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { User, Heart, Folder, LogOut, MapPin, LayoutDashboard } from 'lucide-react';
 import { ModeToggle } from './toggle-mode';
+import { LanguageSwitcher } from '@/shared/components/common/LanguageSwitcher';
 
 export function Header() {
   const { user, isAuthenticated, isGuest, logout, hasHydrated } = useAuth();
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -30,6 +34,7 @@ export function Header() {
 
         {/* Auth Section */}
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <ModeToggle />
 
           {!hasHydrated ? (
@@ -40,7 +45,7 @@ export function Header() {
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="gap-2 hidden sm:flex">
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {tCommon('dashboard')}
                 </Button>
               </Link>
 
@@ -71,21 +76,21 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" className="flex items-center cursor-pointer">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                      {tCommon('dashboard')}
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile" className="flex items-center cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      โปรไฟล์
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/my-folder" className="flex items-center cursor-pointer">
                       <Folder className="mr-2 h-4 w-4" />
-                      โฟลเดอร์ของฉัน
+                      {t('myFolder')}
                     </Link>
                   </DropdownMenuItem>
 
@@ -96,7 +101,7 @@ export function Header() {
                     className="text-destructive cursor-pointer focus:text-destructive"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    ออกจากระบบ
+                    {tCommon('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -105,7 +110,7 @@ export function Header() {
             <>
               {/* Guest - Login Button */}
               <Link href="/login">
-                <Button size="sm">เข้าสู่ระบบ</Button>
+                <Button size="sm">{tCommon('login')}</Button>
               </Link>
             </>
           )}

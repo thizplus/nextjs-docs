@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { ChevronRight, type LucideIcon } from "lucide-react"
 
 import {
@@ -21,6 +22,7 @@ import {
 
 export function NavMain({
   items,
+  label,
 }: {
   items: {
     title: string
@@ -32,13 +34,21 @@ export function NavMain({
       url: string
     }[]
   }[]
+  label?: string
 }) {
+  // Track mounted state to prevent hydration mismatch
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>เมนูการใช้งาน</SidebarGroupLabel>
+      <SidebarGroupLabel>{label || "Menu"}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+          <Collapsible key={item.title} asChild defaultOpen={mounted ? item.isActive : false}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
                 <a href={item.url}>

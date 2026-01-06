@@ -40,7 +40,7 @@ export interface Location {
 /**
  * Search types
  */
-export type SearchType = 'all' | 'website' | 'image' | 'video' | 'map' | 'ai';
+export type SearchType = 'all' | 'place' | 'website' | 'image' | 'video' | 'map' | 'ai';
 
 /**
  * Favorite/Folder item types

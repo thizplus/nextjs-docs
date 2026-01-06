@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from './constants/api';
+import { getApiLocale } from '../locale-storage';
 
 // Get token from auth store (will be set up later)
 const getToken = (): string | null => {
@@ -42,13 +43,28 @@ export const apiClient = axios.create({
   timeout: 30000, // 30 seconds
 });
 
-// Request Interceptor - Add Authorization header
+// Request Interceptor - Add Authorization header and Accept-Language
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Add Authorization header
     const token = getToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add Accept-Language header for i18n
+    const locale = getApiLocale();
+    if (config.headers) {
+      config.headers['Accept-Language'] = locale;
+    }
+
+    // Also add lang as query parameter for APIs that need it
+    if (config.params) {
+      config.params = { ...config.params, lang: locale };
+    } else {
+      config.params = { lang: locale };
+    }
+
     return config;
   },
   (error: AxiosError) => {

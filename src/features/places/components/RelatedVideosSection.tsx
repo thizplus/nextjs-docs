@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { RelatedVideo } from "@/shared/types/models";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
@@ -23,6 +24,8 @@ function formatViewCount(count?: number): string {
 }
 
 export function RelatedVideosSection({ videos }: RelatedVideosSectionProps) {
+  const t = useTranslations("place");
+
   if (!videos || videos.length === 0) return null;
 
   return (
@@ -30,7 +33,7 @@ export function RelatedVideosSection({ videos }: RelatedVideosSectionProps) {
       {/* Header */}
       <div className="flex items-center gap-2">
         <Play className="h-5 w-5 text-red-500" />
-        <h2 className="text-xl font-semibold">วิดีโอที่เกี่ยวข้อง</h2>
+        <h2 className="text-xl font-semibold">{t("relatedVideos")}</h2>
         <Badge variant="outline" className="text-xs">
           YouTube
         </Badge>

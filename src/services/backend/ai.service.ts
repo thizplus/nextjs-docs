@@ -1,5 +1,6 @@
 import { apiClient } from '@/shared/lib/api';
 import { AI_API } from '@/shared/lib/api/constants/api';
+import { getApiLocale } from '@/shared/lib/locale-storage';
 import type { ApiResponse, PaginatedResponse } from '@/shared/types/common';
 import type {
   AISearchRequest,
@@ -34,9 +35,14 @@ export const aiService = {
   createChat: async (
     request: CreateChatRequest
   ): Promise<ApiResponse<ChatSessionDetail>> => {
+    // Include lang in request body for i18n
+    const requestWithLang = {
+      ...request,
+      lang: request.lang || getApiLocale(),
+    };
     const { data } = await apiClient.post<ApiResponse<ChatSessionDetail>>(
       AI_API.CHAT,
-      request
+      requestWithLang
     );
     return data;
   },
@@ -73,9 +79,14 @@ export const aiService = {
     sessionId: string,
     request: SendMessageRequest
   ): Promise<ApiResponse<ChatMessage>> => {
+    // Include lang in request body for i18n
+    const requestWithLang = {
+      ...request,
+      lang: request.lang || getApiLocale(),
+    };
     const { data } = await apiClient.post<ApiResponse<ChatMessage>>(
       AI_API.CHAT_MESSAGES(sessionId),
-      request
+      requestWithLang
     );
     return data;
   },

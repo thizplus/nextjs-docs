@@ -18,7 +18,7 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   email: string;
-  username: string;
+  username?: string; // Optional: auto-generated from email if not provided
   password: string;
   firstName: string;
   lastName: string;

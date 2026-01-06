@@ -6,28 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { cn } from "@/shared/lib/utils";
 import { useRegister } from "../hooks/useAuth";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Label } from "@/shared/components/ui/label";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mail, KeyRound, User, Eye, EyeOff } from "lucide-react";
 import { FORM_LIMITS } from "@/shared/config/constants";
 
 const registerSchema = z.object({
-  username: z
-    .string()
-    .min(FORM_LIMITS.AUTH.USERNAME_MIN, { message: `Username ต้องมีอย่างน้อย ${FORM_LIMITS.AUTH.USERNAME_MIN} ตัวอักษร` })
-    .max(FORM_LIMITS.AUTH.USERNAME_MAX, { message: `Username ต้องไม่เกิน ${FORM_LIMITS.AUTH.USERNAME_MAX} ตัวอักษร` })
-    .regex(/^[a-zA-Z0-9]+$/, { message: "Username ต้องเป็นตัวอักษรและตัวเลขเท่านั้น" }),
   firstName: z.string().min(1, { message: "กรุณากรอกชื่อ" }).max(FORM_LIMITS.AUTH.NAME_MAX),
   lastName: z.string().min(1, { message: "กรุณากรอกนามสกุล" }).max(FORM_LIMITS.AUTH.NAME_MAX),
   email: z.string().email({ message: "กรุณากรอกอีเมลให้ถูกต้อง" }).max(FORM_LIMITS.AUTH.EMAIL_MAX),
@@ -43,15 +32,20 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export function RegisterForm() {
+export function RegisterForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   const router = useRouter();
   const registerMutation = useRegister();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const t = useTranslations("auth");
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
       firstName: "",
       lastName: "",
       email: "",
@@ -64,7 +58,6 @@ export function RegisterForm() {
     setError(null);
     try {
       await registerMutation.mutateAsync({
-        username: data.username,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -72,132 +65,140 @@ export function RegisterForm() {
       });
       router.push("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการลงทะเบียน";
+      const message = err instanceof Error ? err.message : t("registerFailed");
       setError(message);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-background">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl">ลงทะเบียน</CardTitle>
-          <CardDescription>สร้างบัญชีผู้ใช้ STOU Smart Tour</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">{t("registerTitle")}</h1>
+          <p className="text-muted-foreground text-sm text-balance">
+            {t("registerDescription")}
+          </p>
+        </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder="johndoe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ชื่อ</FormLabel>
-                      <FormControl>
-                        <Input placeholder="สมชาย" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>นามสกุล</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ใจดี" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">{t("firstName")}</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="firstName"
+                  placeholder="สมชาย"
+                  className="pl-10"
+                  {...form.register("firstName")}
                 />
               </div>
+              {form.formState.errors.firstName && (
+                <p className="text-sm text-destructive">{form.formState.errors.firstName.message}</p>
+              )}
+            </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>อีเมล</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="example@stou.ac.th"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>รหัสผ่าน</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ยืนยันรหัสผ่าน</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? "กำลังลงทะเบียน..." : "ลงทะเบียน"}
-              </Button>
-            </form>
-          </Form>
-
-          <div className="mt-4 text-center text-sm">
-            มีบัญชีแล้ว?{" "}
-            <Link href="/login" className="text-primary hover:underline font-medium">
-              เข้าสู่ระบบ
-            </Link>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">{t("lastName")}</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="lastName"
+                  placeholder="ใจดี"
+                  className="pl-10"
+                  {...form.register("lastName")}
+                />
+              </div>
+              {form.formState.errors.lastName && (
+                <p className="text-sm text-destructive">{form.formState.errors.lastName.message}</p>
+              )}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">{t("email")}</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@stou.ac.th"
+                className="pl-10"
+                {...form.register("email")}
+              />
+            </div>
+            {form.formState.errors.email && (
+              <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">{t("password")}</Label>
+            <div className="relative">
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="pl-10 pr-10"
+                {...form.register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {form.formState.errors.password && (
+              <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+            <div className="relative">
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="pl-10 pr-10"
+                {...form.register("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {form.formState.errors.confirmPassword && (
+              <p className="text-sm text-destructive">{form.formState.errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+            {registerMutation.isPending ? t("loggingIn") : t("register")}
+          </Button>
+        </form>
+
+        <div className="text-center text-sm">
+          {t("haveAccount")}{" "}
+          <Link href="/login" className="text-primary hover:underline font-medium">
+            {t("login")}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

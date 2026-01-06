@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { SearchBar, FilterTabs, useWebsiteSearch, useInfiniteImageSearch, useVideoSearch, useSearch } from "@/features/search";
 import { usePlaceSearch } from "@/features/places";
 import { useBatchCheckFavorites } from "@/features/favorites";
@@ -27,6 +27,7 @@ const PAGE_SIZE = 20;
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const { isAuthenticated } = useAuth();
 
   const t = useTranslations("search");
@@ -50,7 +51,7 @@ function SearchContent() {
     if (newType !== "all") params.set("type", newType);
     if (newPage > 1) params.set("page", newPage.toString());
 
-    const url = `/dashboard/search${params.toString() ? `?${params.toString()}` : ""}`;
+    const url = `/${locale}/dashboard/search${params.toString() ? `?${params.toString()}` : ""}`;
     router.push(url, { scroll: false });
   };
 
@@ -220,7 +221,7 @@ function SearchContent() {
   const handleSearch = (newQuery: string) => {
     // If AI mode is selected, redirect to AI page
     if (searchType === "ai") {
-      router.push(`/dashboard/ai?q=${encodeURIComponent(newQuery)}`);
+      router.push(`/${locale}/dashboard/ai?q=${encodeURIComponent(newQuery)}`);
       return;
     }
 
@@ -234,9 +235,9 @@ function SearchContent() {
     // If AI mode is selected, redirect to AI page with current query
     if (type === "ai") {
       if (query) {
-        router.push(`/dashboard/ai?q=${encodeURIComponent(query)}`);
+        router.push(`/${locale}/dashboard/ai?q=${encodeURIComponent(query)}`);
       } else {
-        router.push("/dashboard/ai");
+        router.push(`/${locale}/dashboard/ai`);
       }
       return;
     }
@@ -244,9 +245,9 @@ function SearchContent() {
     // If map is selected, redirect to map page
     if (type === "map") {
       if (query) {
-        router.push(`/dashboard/map?q=${encodeURIComponent(query)}`);
+        router.push(`/${locale}/dashboard/map?q=${encodeURIComponent(query)}`);
       } else {
-        router.push("/dashboard/map");
+        router.push(`/${locale}/dashboard/map`);
       }
       return;
     }

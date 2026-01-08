@@ -38,11 +38,23 @@ type CreateFolderForm = {
 };
 
 interface CreateFolderDialogProps {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateFolderDialog({
+  trigger,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: CreateFolderDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // ใช้ controlled หรือ internal state
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (controlledOnOpenChange ?? (() => {})) : setInternalOpen;
+
   const createFolder = useCreateFolder();
   const t = useTranslations("folder");
   const tValidation = useTranslations("validation");
@@ -85,7 +97,7 @@ export function CreateFolderDialog({ trigger }: CreateFolderDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t("createNewFolder")}</DialogTitle>

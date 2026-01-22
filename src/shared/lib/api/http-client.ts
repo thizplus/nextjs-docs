@@ -76,14 +76,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized - redirect ทุกกรณี 401
     if (error.response?.status === 401) {
-      const errorMessage = (error.response?.data as { message?: string })?.message;
-
-      // Check if token expired or unauthorized
-      if (errorMessage?.includes('Token expired') || errorMessage?.includes('Unauthorized')) {
-        clearAuth();
-      }
+      clearAuth();
+      return Promise.reject(error);
     }
 
     // Handle network errors

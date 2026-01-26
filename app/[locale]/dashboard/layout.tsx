@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { AuthGuard } from "@/features/auth";
-import { AppSidebar } from "@/shared/components/navigation/sidebar";
 import { MobileBottomNav } from "@/shared/components/navigation/MobileBottomNav";
 import { DynamicBreadcrumb } from "@/shared/components/navigation/DynamicBreadcrumb";
 import { LanguageSwitcher } from "@/shared/components/common/LanguageSwitcher";
@@ -12,6 +12,12 @@ import {
   SidebarTrigger,
 } from "@/shared/components/ui/sidebar";
 import { PageViewTracker } from "@/shared/components/analytics/PageViewTracker";
+
+// Dynamic import to avoid hydration mismatch with Radix UI Collapsible
+const AppSidebar = dynamic(
+  () => import("@/shared/components/navigation/sidebar").then((mod) => mod.AppSidebar),
+  { ssr: false }
+);
 
 export default function DashboardLayout({
   children,

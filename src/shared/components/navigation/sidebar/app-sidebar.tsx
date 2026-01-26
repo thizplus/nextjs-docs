@@ -40,6 +40,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("nav")
   const tAuth = useTranslations("auth")
 
+  // ใช้ state เพื่อหลีกเลี่ยง hydration mismatch
+  const [isAdmin, setIsAdmin] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsAdmin(user?.role === "admin")
+  }, [user?.role])
+
   const navMain = [
     {
       title: t("home"),
@@ -169,7 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} label={t("usageMenu")} />
-        {user?.role === "admin" && (
+        {isAdmin && (
           <NavMain items={navAdmin} label={t("adminMenu")} />
         )}
         <NavSecondary items={navSecondary} className="mt-auto" />

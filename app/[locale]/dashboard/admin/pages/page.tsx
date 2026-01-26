@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Eye, Search, ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePageAnalytics } from '@/features/admin';
 import { StatsCard } from '@/features/admin/components/StatsCard';
@@ -14,6 +15,8 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import type { PageViewStats, PopularSearchStats } from '@/features/admin';
 
 export default function AdminPagesPage() {
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [days, setDays] = useState(30);
   const { data, isLoading, error } = usePageAnalytics({ days, limit: 10 });
 
@@ -21,37 +24,37 @@ export default function AdminPagesPage() {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-destructive">เกิดข้อผิดพลาด</h2>
-          <p className="text-muted-foreground">ไม่สามารถโหลดข้อมูลได้</p>
+          <h2 className="text-lg font-semibold text-destructive">{tCommon('error')}</h2>
+          <p className="text-muted-foreground">{tCommon('loadError')}</p>
         </div>
       </div>
     );
   }
 
   const pageColumns = [
-    { key: 'pageName', header: 'หน้า' },
+    { key: 'pageName', header: t('pages.pageName') },
     {
       key: 'viewCount',
-      header: 'เข้าชม',
+      header: t('pages.viewCount'),
       render: (item: PageViewStats) => item.viewCount.toLocaleString(),
     },
     {
       key: 'uniqueUsers',
-      header: 'Unique Users',
+      header: t('pages.uniqueUsers'),
       render: (item: PageViewStats) => item.uniqueUsers.toLocaleString(),
     },
   ];
 
   const searchColumns = [
-    { key: 'query', header: 'คำค้นหา' },
+    { key: 'query', header: t('pages.query') },
     {
       key: 'searchType',
-      header: 'ประเภท',
+      header: t('pages.searchType'),
       render: (item: PopularSearchStats) => <TypeBadge type={item.searchType} />,
     },
     {
       key: 'count',
-      header: 'จำนวน',
+      header: t('pages.searchCount'),
       render: (item: PopularSearchStats) => item.count.toLocaleString(),
     },
   ];
@@ -67,8 +70,8 @@ export default function AdminPagesPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">สถิติหน้า</h1>
-            <p className="text-muted-foreground">วิเคราะห์การเข้าชมหน้าและการค้นหา</p>
+            <h1 className="text-2xl font-bold">{t('pages.title')}</h1>
+            <p className="text-muted-foreground">{t('pages.subtitle')}</p>
           </div>
         </div>
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
@@ -76,9 +79,9 @@ export default function AdminPagesPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 วัน</SelectItem>
-            <SelectItem value="30">30 วัน</SelectItem>
-            <SelectItem value="90">90 วัน</SelectItem>
+            <SelectItem value="7">{t('pages.last7days')}</SelectItem>
+            <SelectItem value="30">{t('pages.last30days')}</SelectItem>
+            <SelectItem value="90">{t('pages.last90days')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -99,15 +102,15 @@ export default function AdminPagesPage() {
         ) : (
           <>
             <StatsCard
-              title="Page Views"
+              title={t('pages.totalViews')}
               value={data?.totalViews ?? 0}
-              description={`การเข้าชม ${days} วันล่าสุด`}
+              description={`${days} ${t('pages.period').toLowerCase()}`}
               icon={Eye}
             />
             <StatsCard
-              title="การค้นหา"
+              title={t('pages.totalSearches')}
               value={data?.totalSearches ?? 0}
-              description={`การค้นหา ${days} วันล่าสุด`}
+              description={`${days} ${t('pages.period').toLowerCase()}`}
               icon={Search}
             />
           </>
@@ -116,8 +119,8 @@ export default function AdminPagesPage() {
 
       {/* Trend Chart */}
       <TrendChart
-        title="แนวโน้มการเข้าชม"
-        description={`จำนวนการเข้าชมหน้ารายวัน ${days} วันล่าสุด`}
+        title={t('pages.pageViewTrend')}
+        description={`${days} ${t('pages.period').toLowerCase()}`}
         data={data?.viewTrend ?? []}
         isLoading={isLoading}
       />
@@ -125,15 +128,16 @@ export default function AdminPagesPage() {
       {/* Tables */}
       <div className="grid gap-4 lg:grid-cols-2">
         <TopItemsTable
-          title="หน้ายอดนิยม"
-          description="หน้าที่มีการเข้าชมมากที่สุด"
+          title={t('pages.topPages')}
+          description={t('pages.topPagesDesc')}
           data={data?.topPages ?? []}
           columns={pageColumns}
           isLoading={isLoading}
+          emptyMessage={t('pages.noData')}
         />
         <TopItemsTable
-          title="คำค้นหายอดนิยม"
-          description="คำค้นหาที่ผู้ใช้ค้นหาบ่อย"
+          title={t('pages.popularSearches')}
+          description={t('pages.popularSearchesDesc')}
           data={data?.popularSearches ?? []}
           columns={searchColumns}
           isLoading={isLoading}

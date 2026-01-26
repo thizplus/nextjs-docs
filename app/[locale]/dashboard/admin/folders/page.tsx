@@ -1,6 +1,7 @@
 'use client';
 
 import { Folder, FolderOpen, Lock, Globe, ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useFolderAnalytics } from '@/features/admin';
 import { StatsCard } from '@/features/admin/components/StatsCard';
@@ -13,41 +14,43 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import type { TopFolderStats } from '@/features/admin';
 
 export default function AdminFoldersPage() {
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const { data, isLoading, error } = useFolderAnalytics();
 
   if (error) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-destructive">เกิดข้อผิดพลาด</h2>
-          <p className="text-muted-foreground">ไม่สามารถโหลดข้อมูลได้</p>
+          <h2 className="text-lg font-semibold text-destructive">{tCommon('error')}</h2>
+          <p className="text-muted-foreground">{tCommon('loadError')}</p>
         </div>
       </div>
     );
   }
 
   const folderColumns = [
-    { key: 'folderName', header: 'ชื่อโฟลเดอร์' },
-    { key: 'ownerName', header: 'เจ้าของ' },
+    { key: 'folderName', header: t('folders.folderName') },
+    { key: 'ownerName', header: t('folders.owner') },
     {
       key: 'itemCount',
-      header: 'รายการ',
+      header: t('folders.itemCount'),
       render: (item: TopFolderStats) => item.itemCount.toLocaleString(),
     },
     {
       key: 'isPublic',
-      header: 'สถานะ',
+      header: t('folders.status'),
       render: (item: TopFolderStats) => (
         <Badge variant={item.isPublic ? 'default' : 'secondary'}>
           {item.isPublic ? (
             <>
               <Globe className="mr-1 size-3" />
-              สาธารณะ
+              {t('folders.public')}
             </>
           ) : (
             <>
               <Lock className="mr-1 size-3" />
-              ส่วนตัว
+              {t('folders.private')}
             </>
           )}
         </Badge>
@@ -65,8 +68,8 @@ export default function AdminFoldersPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">สถิติโฟลเดอร์</h1>
-          <p className="text-muted-foreground">ภาพรวมโฟลเดอร์ที่ผู้ใช้สร้าง</p>
+          <h1 className="text-2xl font-bold">{t('folders.title')}</h1>
+          <p className="text-muted-foreground">{t('folders.subtitle')}</p>
         </div>
       </div>
 
@@ -86,24 +89,24 @@ export default function AdminFoldersPage() {
         ) : (
           <>
             <StatsCard
-              title="โฟลเดอร์ทั้งหมด"
+              title={t('folders.totalFolders')}
               value={data?.stats.totalFolders ?? 0}
               icon={Folder}
             />
             <StatsCard
-              title="โฟลเดอร์สาธารณะ"
+              title={t('folders.publicFolders')}
               value={data?.stats.publicFolders ?? 0}
               icon={Globe}
             />
             <StatsCard
-              title="โฟลเดอร์ส่วนตัว"
+              title={t('folders.privateFolders')}
               value={data?.stats.privateFolders ?? 0}
               icon={Lock}
             />
             <StatsCard
-              title="รายการทั้งหมด"
+              title={t('folders.totalItems')}
               value={data?.stats.totalItems ?? 0}
-              description={`เฉลี่ย ${(data?.stats.avgItemsPerFolder ?? 0).toFixed(1)} รายการ/โฟลเดอร์`}
+              description={`${(data?.stats.avgItemsPerFolder ?? 0).toFixed(1)} ${t('common.avgPerFolder')}`}
               icon={FolderOpen}
             />
           </>
@@ -112,8 +115,8 @@ export default function AdminFoldersPage() {
 
       {/* Trend Chart */}
       <TrendChart
-        title="แนวโน้มการสร้างโฟลเดอร์"
-        description="จำนวนโฟลเดอร์ที่ถูกสร้างรายวัน 30 วันล่าสุด"
+        title={t('folders.creationTrend')}
+        description={t('folders.creationTrendDesc')}
         data={data?.creationTrend ?? []}
         isLoading={isLoading}
         color="hsl(var(--chart-2))"
@@ -121,11 +124,12 @@ export default function AdminFoldersPage() {
 
       {/* Top Folders Table */}
       <TopItemsTable
-        title="โฟลเดอร์ที่มีรายการมากที่สุด"
-        description="Top 10 โฟลเดอร์ที่มีจำนวนรายการมากที่สุด"
+        title={t('folders.topFolders')}
+        description={t('folders.topFoldersDesc')}
         data={data?.topFolders ?? []}
         columns={folderColumns}
         isLoading={isLoading}
+        emptyMessage={t('folders.noData')}
       />
     </div>
   );

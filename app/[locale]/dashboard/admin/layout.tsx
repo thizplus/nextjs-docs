@@ -2,8 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useUser } from '@/features/auth';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import Link from 'next/link';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -12,15 +15,14 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const user = useUser();
+  const t = useTranslations('admin');
 
   useEffect(() => {
-    // ถ้าไม่ใช่ admin ให้ redirect กลับไปหน้า dashboard
     if (user && user.role !== 'admin') {
       router.replace('/dashboard');
     }
   }, [user, router]);
 
-  // กำลังโหลด user
   if (!user) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -29,13 +31,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  // ไม่ใช่ admin
   if (user.role !== 'admin') {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold">Access Denied</h2>
-          <p className="text-muted-foreground">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+        <div className="text-center space-y-4">
+          <h2 className="text-lg font-semibold">{t('accessDenied.title')}</h2>
+          <p className="text-muted-foreground">{t('accessDenied.message')}</p>
+          <Link href="/dashboard">
+            <Button>{t('accessDenied.backToHome')}</Button>
+          </Link>
         </div>
       </div>
     );

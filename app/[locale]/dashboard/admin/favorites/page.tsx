@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Heart, ArrowLeft, MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useFavoriteAnalytics } from '@/features/admin';
 import { StatsCard } from '@/features/admin/components/StatsCard';
@@ -15,16 +16,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avat
 import type { TopFavoritedItem } from '@/features/admin';
 
 export default function AdminFavoritesPage() {
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [days, setDays] = useState(30);
-  // ตอนนี้รองรับแค่ place เท่านั้น
   const { data, isLoading, error } = useFavoriteAnalytics({ days, limit: 10 });
 
   if (error) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-destructive">เกิดข้อผิดพลาด</h2>
-          <p className="text-muted-foreground">ไม่สามารถโหลดข้อมูลได้</p>
+          <h2 className="text-lg font-semibold text-destructive">{tCommon('error')}</h2>
+          <p className="text-muted-foreground">{tCommon('loadError')}</p>
         </div>
       </div>
     );
@@ -33,7 +35,7 @@ export default function AdminFavoritesPage() {
   const topItemColumns = [
     {
       key: 'title',
-      header: 'สถานที่',
+      header: t('favorites.placeName'),
       render: (item: TopFavoritedItem) => (
         <div className="flex items-center gap-3">
           <Avatar className="size-10 rounded-lg">
@@ -48,12 +50,12 @@ export default function AdminFavoritesPage() {
     },
     {
       key: 'favoriteCount',
-      header: 'จำนวน Favorites',
+      header: t('favorites.favoriteCount'),
       render: (item: TopFavoritedItem) => (
         <div className="flex items-center gap-1.5">
           <Heart className="size-4 fill-red-500 text-red-500" />
           <span className="font-semibold">{item.favoriteCount.toLocaleString()}</span>
-          <span className="text-muted-foreground">คน</span>
+          <span className="text-muted-foreground">{t('common.users')}</span>
         </div>
       ),
     },
@@ -70,18 +72,18 @@ export default function AdminFavoritesPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">สถิติรายการโปรด</h1>
-            <p className="text-muted-foreground">สถานที่ที่ผู้ใช้บันทึกเป็น Favorites</p>
+            <h1 className="text-2xl font-bold">{t('favorites.title')}</h1>
+            <p className="text-muted-foreground">{t('favorites.subtitle')}</p>
           </div>
         </div>
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 วัน</SelectItem>
-            <SelectItem value="30">30 วัน</SelectItem>
-            <SelectItem value="90">90 วัน</SelectItem>
+            <SelectItem value="7">{t('pages.last7days')}</SelectItem>
+            <SelectItem value="30">{t('pages.last30days')}</SelectItem>
+            <SelectItem value="90">{t('pages.last90days')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -102,15 +104,15 @@ export default function AdminFavoritesPage() {
         ) : (
           <>
             <StatsCard
-              title="สถานที่โปรดทั้งหมด"
+              title={t('favorites.totalFavorites')}
               value={data?.stats.totalFavorites ?? 0}
-              description="จำนวนสถานที่ที่ถูกบันทึกเป็น Favorites"
+              description={t('common.items')}
               icon={Heart}
             />
             <StatsCard
-              title="สถานที่"
+              title={t('favorites.topPlaces')}
               value={data?.stats.byType?.place ?? data?.stats.totalFavorites ?? 0}
-              description="รองรับเฉพาะสถานที่ในตอนนี้"
+              description={t('common.items')}
               icon={MapPin}
             />
           </>
@@ -119,8 +121,8 @@ export default function AdminFavoritesPage() {
 
       {/* Trend Chart */}
       <TrendChart
-        title="แนวโน้มการบันทึกสถานที่โปรด"
-        description={`จำนวน Favorites รายวัน ${days} วันล่าสุด`}
+        title={t('favorites.favoriteTrend')}
+        description={t('favorites.favoriteTrendDesc')}
         data={data?.favoriteTrend ?? []}
         isLoading={isLoading}
         color="hsl(var(--chart-3))"
@@ -128,12 +130,12 @@ export default function AdminFavoritesPage() {
 
       {/* Top Items Table */}
       <TopItemsTable
-        title="สถานที่ยอดนิยม"
-        description="Top 10 สถานที่ที่ผู้ใช้บันทึกเป็น Favorites มากที่สุด"
+        title={t('favorites.topPlaces')}
+        description={t('favorites.topPlacesDesc')}
         data={data?.topItems ?? []}
         columns={topItemColumns}
         isLoading={isLoading}
-        emptyMessage="ยังไม่มีสถานที่ที่ถูกบันทึกเป็น Favorites"
+        emptyMessage={t('favorites.noData')}
       />
     </div>
   );

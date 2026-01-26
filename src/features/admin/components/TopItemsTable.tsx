@@ -27,7 +27,7 @@ interface TopItemsTableProps<T> {
   emptyMessage?: string;
 }
 
-export function TopItemsTable<T extends Record<string, unknown>>({
+export function TopItemsTable<T extends object>({
   title,
   description,
   data,

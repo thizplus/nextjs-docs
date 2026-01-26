@@ -16,6 +16,9 @@ import {
   QrCode,
   Languages,
   Heart,
+  BarChart3,
+  FolderHeart,
+  FileBarChart,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -118,6 +121,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   ]
 
+  // Admin menu - only visible for admin role
+  const navAdmin = [
+    {
+      title: t("adminDashboard"),
+      url: "/dashboard/admin",
+      icon: BarChart3,
+      items: [
+        {
+          title: t("adminOverview"),
+          url: "/dashboard/admin",
+        },
+        {
+          title: t("adminPages"),
+          url: "/dashboard/admin/pages",
+        },
+        {
+          title: t("adminFolders"),
+          url: "/dashboard/admin/folders",
+        },
+        {
+          title: t("adminFavorites"),
+          url: "/dashboard/admin/favorites",
+        },
+      ],
+    },
+  ]
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -139,6 +169,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} label={t("usageMenu")} />
+        {user?.role === "admin" && (
+          <NavMain items={navAdmin} label={t("adminMenu")} />
+        )}
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

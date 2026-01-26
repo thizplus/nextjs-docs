@@ -80,3 +80,17 @@ export const UTILITY_API = {
   QR_CODE: '/utils/qrcode',
   DISTANCE: '/utils/distance',
 } as const;
+
+// ==================== Admin Endpoints ====================
+export const ADMIN_API = {
+  DASHBOARD: '/admin/stats/dashboard',
+  PAGES: '/admin/stats/pages',
+  FOLDERS: '/admin/stats/folders',
+  FAVORITES: '/admin/stats/favorites',
+  CLEANUP: '/admin/stats/cleanup',
+} as const;
+
+// ==================== Analytics Endpoints ====================
+export const ANALYTICS_API = {
+  TRACK: '/analytics/track',
+} as const;

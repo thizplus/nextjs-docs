@@ -11,6 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/shared/components/ui/sidebar";
+import { PageViewTracker } from "@/shared/components/analytics/PageViewTracker";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
+      <PageViewTracker />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>

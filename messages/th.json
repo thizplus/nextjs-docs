@@ -659,6 +659,7 @@
       "subtitle": "สถิติการใช้งานระบบโดยรวม",
       "totalUsers": "ผู้ใช้ทั้งหมด",
       "activeUsers": "ผู้ใช้งานใน 7 วัน",
+      "activeUsersDesc": "{count} คนใช้งานใน 7 วันล่าสุด",
       "totalFavorites": "รายการโปรดทั้งหมด",
       "totalFolders": "โฟลเดอร์ทั้งหมด",
       "totalPageViews": "การเข้าชมหน้า (90 วัน)",

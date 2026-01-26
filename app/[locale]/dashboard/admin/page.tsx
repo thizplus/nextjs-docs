@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
             <StatsCard
               title={t('overview.totalUsers')}
               value={stats?.totalUsers ?? 0}
-              description={`${stats?.activeUsers ?? 0} ${t('overview.users')} (7 ${t('pages.last7days').split(' ')[0]})`}
+              description={t('overview.activeUsersDesc', { count: stats?.activeUsers ?? 0 })}
               icon={Users}
             />
             <StatsCard

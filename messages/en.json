@@ -659,6 +659,7 @@
       "subtitle": "Overall system usage statistics",
       "totalUsers": "Total Users",
       "activeUsers": "Active Users (7 days)",
+      "activeUsersDesc": "{count} active in last 7 days",
       "totalFavorites": "Total Favorites",
       "totalFolders": "Total Folders",
       "totalPageViews": "Page Views (90 days)",
